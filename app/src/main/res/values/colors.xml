@@ -4,4 +4,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="bg_fragment_listapp">#27ae60</color>
     <color name="bg_fragment_setting">#c0392b</color>
+    <color name="bg_toolbar">#0984e3</color>
 </resources>

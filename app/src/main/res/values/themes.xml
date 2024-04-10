@@ -3,6 +3,7 @@
 
     <style name="Base.Theme.AppLock" parent="Theme.Material3.DayNight.NoActionBar">
 
+
     </style>
 
     <style name="Theme.AppLock" parent="Base.Theme.AppLock" />
@@ -12,4 +13,5 @@
         <item name="android:textColorSecondary">@android:color/white</item>
         <item name="actionMenuTextColor">@android:color/white</item>
     </style>
+
 </resources>

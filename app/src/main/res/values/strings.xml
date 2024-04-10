@@ -8,4 +8,10 @@
     </string-array>
 
 
+    <dimen name="app_bar_padding">16dp</dimen>
+    <dimen name="app_bar_size_menu_item">32dp</dimen>
+
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
+
 </resources>

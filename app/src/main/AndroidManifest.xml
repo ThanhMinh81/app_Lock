@@ -13,7 +13,6 @@
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.GET_TASKS"/>
-
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
 
@@ -26,17 +25,14 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AppLock"
+        android:theme="@style/Base.Theme.AppLock"
         tools:targetApi="31">
-
 
         <service
             android:foregroundServiceType="dataSync"
             android:name=".AppCheckService"
             android:enabled="true"
             android:exported="true" />
-
-
 
         <activity
             android:name=".MainActivity"
