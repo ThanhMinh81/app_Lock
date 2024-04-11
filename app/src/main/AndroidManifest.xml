@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
 
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <uses-permission
@@ -12,9 +12,10 @@
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
-    <uses-permission android:name="android.permission.GET_TASKS"/>
+
+    <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:name=".MyApplication"
@@ -26,13 +27,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Base.Theme.AppLock"
+        android:usesCleartextTraffic="true"
         tools:targetApi="31">
 
         <service
-            android:foregroundServiceType="dataSync"
             android:name=".AppCheckService"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="true"
+            android:foregroundServiceType="dataSync" />
 
         <activity
             android:name=".MainActivity"
@@ -45,6 +47,15 @@
 
         </activity>
 
-</application>
+
+        <receiver android:name=".Broadcast"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.ACTIVITY_CHANGED" />
+            </intent-filter>
+        </receiver>
+
+
+    </application>
 
 </manifest>

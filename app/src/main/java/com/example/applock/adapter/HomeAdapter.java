@@ -11,7 +11,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.applock.Interface.ItemClickListenerLock;
 import com.example.applock.R;
+import com.example.applock.db.Lock;
 
 import java.util.ArrayList;
 
@@ -20,9 +22,13 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
     Context context ;
     ArrayList<ApplicationInfo> applicationInfos;
 
-    public HomeAdapter(Context context ,ArrayList<ApplicationInfo> applicationInfos) {
+    ItemClickListenerLock itemClickListenerLock ;
+
+
+    public HomeAdapter(Context context ,ArrayList<ApplicationInfo> applicationInfos , ItemClickListenerLock itemClickListenerLock ) {
         this.context = context ;
         this.applicationInfos = applicationInfos;
+        this.itemClickListenerLock = itemClickListenerLock ;
     }
 
     @NonNull
@@ -40,10 +46,15 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull HomeAdapter.ViewHolder holder, int position) {
 
         ApplicationInfo appInfo = applicationInfos.get(position);
+        Lock lock = new Lock(0,appInfo.loadLabel(context.getPackageManager()).toString());
 
 
             holder.tvNameApp.setText(appInfo.loadLabel(context.getPackageManager()));
             holder.imgIcon.setImageDrawable(appInfo.loadIcon(context.getPackageManager()));
+
+            holder.imgClock.setOnClickListener(v -> {
+                 itemClickListenerLock.clickItemLock(lock);
+            });
 
 
     }

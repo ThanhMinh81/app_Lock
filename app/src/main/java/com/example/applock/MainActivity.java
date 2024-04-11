@@ -3,11 +3,14 @@ package com.example.applock;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -19,14 +22,20 @@ import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentStatePagerAdapter;
+import androidx.room.Room;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.applock.adapter.ViewPagerAdapter;
+import com.example.applock.db.LockDatabase;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.tabs.TabLayout;
@@ -35,34 +44,24 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
     private static final String CHANNEL_DEFAULT_IMPORTANCE = "Service";
     ListView listView;
     TextView text;
-
     private String TAG = "MainActivity";
-
     private static final int REQUEST_USAGE_STATS_PERMISSION = 1;
-
     private static final int NOTIFICATION_ID = 1;
-
     Button btnStop;
-
     TabLayout mTabLayout;
     ViewPager mViewPager;
-
     Spinner spinnerSelected;
-
-    MaterialToolbar materialToolbar;
-
+    Toolbar materialToolbar;
     SearchView searchView;
+    private DrawerLayout drawerLayout;
+    private ActionBarDrawerToggle actionBarDrawerToggle;
 
-    private DrawerLayout mDrawerLayout;
+    SharedPreferences pref;
 
-    private NavigationView navigationView;
-
-    ActionBarDrawerToggle actionBarDrawerToggle;
-
+    LockDatabase database;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,12 +71,38 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setContentView(R.layout.activity_main);
 
-        materialToolbar = findViewById(R.id.toolbar);
-        materialToolbar.setTitleTextColor(Color.WHITE);
-        setSupportActionBar(materialToolbar);
-        materialToolbar.setBackgroundColor(getColor(R.color.bg_toolbar));
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        pref = MainActivity.this.getSharedPreferences("PREFS", 0);
 
+
+
+        try {
+            database = Room.databaseBuilder(this, LockDatabase.class, "locks_database")
+                    .allowMainThreadQueries()
+                    .build();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        // check quyen truy cap vao ung dung he thong
+        requestUsageStatsPermission();
+
+        int permissionState = ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS);
+        // If the permission is not granted, request it.
+        if (permissionState == PackageManager.PERMISSION_DENIED) {
+            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
+        }
+
+        materialToolbar = findViewById(R.id.toolbar);
+
+        materialToolbar.setTitleTextColor(Color.WHITE);
+
+        setSupportActionBar(materialToolbar);
+
+        materialToolbar.setBackgroundColor(getColor(R.color.bg_toolbar));
+
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         spinnerSelected = this.<Spinner>findViewById(R.id.spinner_nav);
 
@@ -85,37 +110,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mViewPager = this.<ViewPager>findViewById(R.id.viewpagerHome);
 
+        setSupportActionBar(materialToolbar);
 
-        mDrawerLayout = this.<DrawerLayout>findViewById(R.id.drawerlayout);
+        drawerLayout = findViewById(R.id.drawerlayout);
 
-        navigationView = findViewById(R.id.nav_view);
+        actionBarDrawerToggle = new ActionBarDrawerToggle(this, drawerLayout, R.string.nav_open, R.string.nav_close);
+
+        drawerLayout.addDrawerListener(actionBarDrawerToggle);
+
+        actionBarDrawerToggle.syncState();
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         getSupportActionBar().setHomeButtonEnabled(true);
-
-
-        navigationView.setNavigationItemSelectedListener(this);
-
-
-        actionBarDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, materialToolbar, R.string.nav_open, R.string.nav_close) {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle(R.string.app_name);
-                }
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle(R.string.app_name);
-                }
-            }
-        };
-
-        mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
-        actionBarDrawerToggle.syncState();
 
         ArrayAdapter<CharSequence> adapterSpinner = ArrayAdapter.createFromResource(this, R.array.spinner_list_item_array, android.R.layout.simple_spinner_item);
 
@@ -132,6 +139,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(mTabLayout));
+
+        mViewPager.setCurrentItem(0);
 
         searchView = this.<SearchView>findViewById(R.id.searchNav);
 
@@ -159,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 ((TextView) view).setTextColor(Color.WHITE);
-                ((TextView) view).setTextSize(20);
+                ((TextView) view).setTextSize(18);
 
             }
 
@@ -196,7 +205,68 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
-//    @Override
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    private void requestUsageStatsPermission() {
+        if (!hasUsageStatsPermission()) {
+            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            startActivityForResult(intent, REQUEST_USAGE_STATS_PERMISSION);
+        }
+    }
+
+    private boolean hasUsageStatsPermission() {
+        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
+        return mode == AppOpsManager.MODE_ALLOWED;
+    }
+
+
+    private boolean isAccessGranted() {
+
+        try {
+            PackageManager packageManager = getPackageManager();
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(getPackageName(), 0);
+            AppOpsManager appOpsManager = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
+            int mode = 0;
+            if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.KITKAT) {
+                mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, applicationInfo.uid, applicationInfo.packageName);
+            }
+            return (mode == AppOpsManager.MODE_ALLOWED);
+
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+
+    }
+
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
+
+
+        menuItem.setChecked(true);
+
+        drawerLayout.closeDrawers();
+
+
+        return false;
+    }
+
+
+    //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
 //
 //        MenuInflater inflater = getMenuInflater();
@@ -212,11 +282,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //        searchView.setIconifiedByDefault(false);
 //        searchView.setIconified(false);
 //        searchView.setMaxWidth(Integer.MAX_VALUE);
-//
 //        searchView.setIconifiedByDefault(false);
-//
-//
-//
 //        int appBarPadding = getResources().getDimensionPixelSize(R.dimen.app_bar_padding);
 //        int menuItemSize = getResources().getDimensionPixelSize(R.dimen.app_bar_size_menu_item);
 //        searchView.setMaxWidth(materialToolbar.getWidth() * appBarPadding - menuItemSize);
@@ -229,13 +295,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //            public boolean onMenuItemActionExpand(MenuItem item) {
 //
 //                if (getSupportActionBar() != null) {
-//
-//
-//                    ImageView searchIcon = (ImageView)searchView.findViewById(R.id.sear);
+//                ImageView searchIcon = (ImageView)searchView.findViewById(R.id.sear);
 //                    searchIcon.setImageDrawable(null);
-//
-//
-//
 //                    getSupportActionBar().setDisplayShowTitleEnabled(false);
 //                    getSupportActionBar().setDisplayHomeAsUpEnabled(false);
 //                    int searchIconId = getResources().getIdentifier("android:id/search_mag_icon", null, null);
@@ -261,64 +322,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //    }
 
 
-    @Override
-    public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-        }
-    }
+//    @Override
+//    public void onBackPressed() {
+//        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+//            mDrawerLayout.closeDrawer(GravityCompat.START);
+//        } else {
+//            super.onBackPressed();
+//        }
+//    }
 
 
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-
-        if (actionBarDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
-    private void requestUsageStatsPermission() {
-        if (!hasUsageStatsPermission()) {
-            Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-            startActivityForResult(intent, REQUEST_USAGE_STATS_PERMISSION);
-        }
-    }
-
-    private boolean hasUsageStatsPermission() {
-        AppOpsManager appOps = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
-        int mode = appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), getPackageName());
-        return mode == AppOpsManager.MODE_ALLOWED;
-    }
-
-
-    private boolean isAccessGranted() {
-
-        try {
-
-            PackageManager packageManager = getPackageManager();
-            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(getPackageName(), 0);
-
-            AppOpsManager appOpsManager = (AppOpsManager) getSystemService(Context.APP_OPS_SERVICE);
-            int mode = 0;
-            if (android.os.Build.VERSION.SDK_INT > android.os.Build.VERSION_CODES.KITKAT) {
-                mode = appOpsManager.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, applicationInfo.uid, applicationInfo.packageName);
-            }
-            return (mode == AppOpsManager.MODE_ALLOWED);
-
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
-
-    }
-
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        return false;
-    }
 }

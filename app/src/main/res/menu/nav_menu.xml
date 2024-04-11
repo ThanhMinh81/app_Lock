@@ -4,38 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn = "navigation_view">
 
-    <group
-        android:checkableBehavior="single">
-
-        <item
-            android:id="@+id/fragmentHome"
-            android:title="Home"/>
-
-        <item
-            android:id="@+id/nav_settings"
-
-            android:title="Settings"/>
-
-        <item
-            android:id="@+id/nav_share"
-
-            android:title="Share"/>
-
-        <item
-            android:id="@+id/nav_about"
-
-            android:title="About Us"/>
-    </group>
     <item
-        android:title="">
+        android:icon="@color/black"
+        android:id="@+id/fragmentHome"
+        android:title="Home"/>
 
-        <menu>
-            <item
-                android:id="@+id/nav_logout"
+    <item
+        android:icon="@color/black"
 
-                android:title="Logout"/>
-        </menu>
+        android:id="@+id/nav_settings"
 
-    </item>
+        android:title="Settings"/>
+
+    <item
+        android:icon="@color/black"
+
+        android:id="@+id/nav_share"
+
+        android:title="Share"/>
+
+    <item
+
+        android:icon="@color/black"
+        android:id="@+id/nav_about"
+
+        android:title="About Us"/>
 
 </menu>
