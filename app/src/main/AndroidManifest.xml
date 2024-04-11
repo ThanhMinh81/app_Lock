@@ -2,19 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <uses-permission
         android:name="android.permission.PACKAGE_USAGE_STATS"
         tools:ignore="ProtectedPermissions" />
+
     <uses-permission
         android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
 
     <uses-permission android:name="android.permission.GET_TASKS" />
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
@@ -48,12 +50,15 @@
         </activity>
 
 
-        <receiver android:name=".Broadcast"
+        <receiver
+            android:name=".Broadcast"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.ACTIVITY_CHANGED" />
+                <action android:name="test.Broadcast" />
             </intent-filter>
         </receiver>
+
+        <activity android:name=".TestBroadcastActivity"></activity>
 
 
     </application>

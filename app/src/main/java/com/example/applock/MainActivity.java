@@ -1,5 +1,6 @@
 package com.example.applock;
 
+import android.Manifest;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 
+
         try {
             database = Room.databaseBuilder(this, LockDatabase.class, "locks_database")
                     .allowMainThreadQueries()
@@ -88,10 +91,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // check quyen truy cap vao ung dung he thong
         requestUsageStatsPermission();
 
-        int permissionState = ContextCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS);
+        int permissionState = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS);
         // If the permission is not granted, request it.
         if (permissionState == PackageManager.PERMISSION_DENIED) {
-            ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 1);
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.POST_NOTIFICATIONS}, 1);
         }
 
         materialToolbar = findViewById(R.id.toolbar);
@@ -218,6 +221,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         return super.onOptionsItemSelected(item);
     }
+
+//    @Override
+//    protected void onStop() {
+//        super.onStop();
+//        unregisterReceiver(mBroadcast);
+//    }
 
 
     private void requestUsageStatsPermission() {

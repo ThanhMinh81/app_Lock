@@ -45,6 +45,9 @@ public class AppCheckService extends Service {
 
     String currentAppsTempt = "";
 
+    private Broadcast mBroadcast;
+
+
 
     @SuppressLint("ForegroundServiceType")
     @Override
@@ -54,10 +57,22 @@ public class AppCheckService extends Service {
 
         locks = intent.getParcelableArrayListExtra("listData");
 
-        for (Lock lock : locks)
-        {
+        for (Lock lock : locks) {
             Log.d("fsafas", lock.getName() + " ");
 
+        }
+
+
+        mBroadcast = new Broadcast();
+        IntentFilter filter = new IntentFilter("test.Broadcast");
+
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                registerReceiver(mBroadcast, filter, Context.RECEIVER_NOT_EXPORTED);
+            }
+        }catch (Exception e)
+        {
+            Log.d("309257320947",e.toString());
         }
 
 //        String stringFromFragment = intent.getStringExtra("string param 1");
@@ -144,8 +159,13 @@ public class AppCheckService extends Service {
                             tempt = true;
                             if (lock.getName().equals(appName)) {
                                 if (currentAppsTempt != appName) {
+
                                     Log.d("FDSAOIFJOSASDFAF", lock.getName());
-                                    triggerView();
+
+                                    Intent intent = new Intent(getApplicationContext(), Boolean.class);
+                                    intent.setAction("test.Broadcast");
+                                    sendBroadcast(intent);
+
                                 }
                                 currentAppsTempt = appName;
                             }
@@ -160,12 +180,18 @@ public class AppCheckService extends Service {
         }
     }
 
-    private void triggerView() {
-
-    }
 
     @Override
     public IBinder onBind(Intent intent) {
         return null;
     }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Hủy đăng ký BroadcastReceiver khi dịch vụ bị hủy
+        unregisterReceiver(mBroadcast);
+    }
+
 }
