@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -47,10 +48,13 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private static final String CHANNEL_DEFAULT_IMPORTANCE = "Service";
+    private static final int REQUEST_OVERLAY_PERMISSION = 1111 ;
     ListView listView;
     TextView text;
     private String TAG = "MainActivity";
     private static final int REQUEST_USAGE_STATS_PERMISSION = 1;
+
+    private static final int REQUEST_SYSTEM_ALERT_WINDOW = 1001;
     private static final int NOTIFICATION_ID = 1;
     Button btnStop;
     TabLayout mTabLayout;
@@ -74,6 +78,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
 
         pref = MainActivity.this.getSharedPreferences("PREFS", 0);
+
+
+        if (!Settings.canDrawOverlays(this)) {
+            // Quyền chưa được cấp, bạn cần yêu cầu quyền
+            requestOverlayPermission();
+        } else {
+            // Quyền đã được cấp
+            // Thực hiện các hành động khác ở đây
+        }
 
 
 
@@ -208,6 +221,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     }
 
+    private void requestOverlayPermission() {
+        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+        startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION);
+    }
+
+
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -230,10 +249,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     private void requestUsageStatsPermission() {
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
+
+            requestSystemAlertWindowPermission();
+        } else {
+
+            // showOverlayWindow();
+        }
+
+
         if (!hasUsageStatsPermission()) {
             Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
             startActivityForResult(intent, REQUEST_USAGE_STATS_PERMISSION);
         }
+    }
+
+    private void requestSystemAlertWindowPermission() {
+        Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
+        startActivity(intent);
     }
 
     private boolean hasUsageStatsPermission() {

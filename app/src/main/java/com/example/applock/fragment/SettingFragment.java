@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+
 import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
@@ -37,7 +38,10 @@ public class SettingFragment extends Fragment {
 
         view = inflater.inflate(R.layout.fragment_setting, container, false);
 
-        mPatternLockView = (PatternLockView)  view.findViewById(R.id.pattern_lock_view);
+        mPatternLockView = (PatternLockView) view.findViewById(R.id.pattern_lock_view);
+
+        // cai nay xet cho no khong thay duoc hinh ve nua
+//        mPatternLockView.setInStealthMode(true);
 
         mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
             @Override
@@ -54,15 +58,14 @@ public class SettingFragment extends Fragment {
             public void onComplete(List<PatternLockView.Dot> pattern) {
 
                 // Shared Preferences to save state
-               try {
-                   SharedPreferences sharedPreferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-                   SharedPreferences.Editor editor = sharedPreferences.edit();
-                   editor.putString("password", PatternLockUtils.patternToString(mPatternLockView, pattern));
-                   editor.apply();
-               }catch (Exception e)
-               {
-                   Log.d("390427479",e.toString());
-               }
+                try {
+                    SharedPreferences sharedPreferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString("password", PatternLockUtils.patternToString(mPatternLockView, pattern));
+                    editor.apply();
+                } catch (Exception e) {
+                    Log.d("390427479", e.toString());
+                }
 
                 // Intent to navigate to home screen when password added is true
 //                Intent intent = new Intent(getContext(), ProgramActivity.class);
@@ -78,8 +81,8 @@ public class SettingFragment extends Fragment {
         });
 
 
-
         return view;
     }
+
 
 }
