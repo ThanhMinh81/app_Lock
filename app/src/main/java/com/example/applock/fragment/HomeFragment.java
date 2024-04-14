@@ -1,14 +1,23 @@
 package com.example.applock.fragment;
 
+
+
+import static android.app.ProgressDialog.show;
+
+import android.app.job.JobInfo;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
+    private static final int JOB_ID =123 ;
     View view;
     HomeAdapter homeAdapter;
     RecyclerView rcvHome;
@@ -74,12 +84,55 @@ public class HomeFragment extends Fragment {
 
         getListAppSystem();
 
+
+
+
+
+//        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+//        startActivity(intent);
+
+
+//        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+//        startActivity(intent);
+
+
         Intent intent = new Intent(getContext(), AppCheckService.class);
-        intent.putExtra("listData", locks);
+//        intent.putExtra("listData", locks);
         getContext().startService(intent);
 
 
+
+
+//       try {
+//           JobSchedulerHelper.scheduleJob(getContext());
+//       }catch (Exception e)
+//       {
+//           Log.d("fsafa",e.toString());
+//       }
+
+//        checkAccessibilityPermission();
+
         return view;
+    }
+
+    public boolean checkAccessibilityPermission () {
+        int accessEnabled = 0;
+        try {
+            accessEnabled = Settings.Secure.getInt(getContext().getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED);
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+        if (accessEnabled == 0) {
+
+            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+            return false;
+
+        } else {
+            return true;
+        }
     }
 
 

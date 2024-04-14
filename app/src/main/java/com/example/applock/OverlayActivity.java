@@ -9,6 +9,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class OverlayActivity extends AppCompatActivity {
 
+
+    boolean checkApps = false ;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -17,5 +20,30 @@ public class OverlayActivity extends AppCompatActivity {
 
         setContentView(R.layout.password_layout);
 
+
+
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }

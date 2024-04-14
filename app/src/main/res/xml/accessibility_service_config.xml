@@ -1,9 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeViewTextChanged|typeViewFocused|typeViewLongClicked|typeViewClicked|typeViewScrolled|typeWindowStateChanged"
-    android:accessibilityFeedbackType="feedbackHaptic"
-    android:accessibilityFlags="flagIncludeNotImportantViews"
+    android:packageNames="com.example.applock"
+    android:accessibilityEventTypes="typeAllMask"
+    android:accessibilityFlags="flagRequestFilterKeyEvents"
+    android:accessibilityFeedbackType="feedbackSpoken"
+    android:notificationTimeout="100"
     android:canRetrieveWindowContent="true"
-    android:description="@string/app_name"
-    android:notificationTimeout="10"
-
-    android:settingsActivity="org.example.ExampleActivity" />
+    android:canRequestFilterKeyEvents="true"
+    android:settingsActivity="com.example.applock.MainActivity"
+    />

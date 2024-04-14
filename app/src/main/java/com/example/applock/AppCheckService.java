@@ -1,11 +1,12 @@
 package com.example.applock;
 
-
 import static com.example.applock.MyApplication.CHAINNEL_ID;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -22,7 +23,10 @@ import android.content.pm.ResolveInfo;
 import android.graphics.PixelFormat;
 import android.os.Build;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -42,11 +46,13 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.room.Room;
 
 import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
 import com.example.applock.db.Lock;
+import com.example.applock.db.LockDatabase;
 import com.example.applock.fragment.HomeFragment;
 
 import java.util.ArrayList;
@@ -56,16 +62,20 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class AppCheckService extends AccessibilityService implements   View.OnTouchListener  {
+public class AppCheckService extends AccessibilityService {
 
     private static final String TAG = "AppCheckService";
     private static final int CHANNEL_DEFAULT_IMPORTANCE_SERVICE = 1;
 
     public static Notification notification;
 
-    ArrayList<Lock> locks;
+    ArrayList<Lock> locks = new ArrayList<>();
+
+    ArrayList<String> names = new ArrayList<>();
 
     String currentAppsTempt = "";
+
+    String recentappsApp = "";
 
     private Broadcast mBroadcast;
 
@@ -74,24 +84,51 @@ public class AppCheckService extends AccessibilityService implements   View.OnTo
     View passwordView;
 
     private Handler mHandler;
-
-
+    View myview;
     SharedPreferences sharedPreferences;
+
+    String packageName ="";
+
+    @Override
+    public void onCreate() {
+
+        HandlerThread handlerThread = new HandlerThread("MyHandlerThread");
+        handlerThread.start();
+        Looper looper = handlerThread.getLooper();
+        mHandler = new Handler(looper);
+
+
+        LockDatabase database = Room.databaseBuilder(getApplicationContext(), LockDatabase.class, "locks_database")
+                .allowMainThreadQueries()
+                .build();
+
+        locks.addAll(database.lockDAO().getListApps());
+
+        for (Lock lock : locks) {
+            names.add(lock.getName());
+        }
+
+        super.onCreate();
+    }
 
     @SuppressLint("ForegroundServiceType")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+
         Log.d(TAG, "Service started");
+//
+//        locks = new ArrayList<>();
+//        mHandler = new Handler(getMainLooper());
 
-        locks = new ArrayList<>();
-        mHandler = new Handler(getMainLooper());
 
-        locks = intent.getParcelableArrayListExtra("listData");
-
+//      if(intent.getParcelableArrayListExtra("listData") != null)
+//      {
+//          locks = intent.getParcelableArrayListExtra("listData");
         for (Lock lock : locks) {
             Log.d("fsafas", lock.getName() + " ");
-
         }
+//      }
 
 
         mBroadcast = new Broadcast();
@@ -132,13 +169,13 @@ public class AppCheckService extends AccessibilityService implements   View.OnTo
     private void checkRunningApps() {
         while (true) {
 
-//            Log.d("fdsaf35938498347918","32847294791239497241");
-
             try {
-                Thread.sleep(200);
+                Thread.sleep(300);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
+
+//            Log.d("fdsfafa", currentAppsTempt);
 
             UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
             long currentTime = System.currentTimeMillis();
@@ -146,6 +183,7 @@ public class AppCheckService extends AccessibilityService implements   View.OnTo
             boolean tempt = false;
 
             if (stats != null) {
+
                 SortedMap<Long, UsageStats> runningTasks = new TreeMap<>();
                 for (UsageStats usageStats : stats) {
                     runningTasks.put(usageStats.getLastTimeUsed(), usageStats);
@@ -153,34 +191,37 @@ public class AppCheckService extends AccessibilityService implements   View.OnTo
                 if (!runningTasks.isEmpty()) {
 
                     String packageName = runningTasks.get(runningTasks.lastKey()).getPackageName();
+
                     PackageManager packageManager = getPackageManager();
+
                     try {
 
                         ApplicationInfo applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+                        packageName = applicationInfo.packageName ;
 
                         String appName = (String) packageManager.getApplicationLabel(applicationInfo);
+//                        String nameTempt = appName ;
 
-                        for (Lock lock : locks) {
-                            tempt = true;
-                            if (lock.getName().equals(appName)) {
-
-                                if (currentAppsTempt != appName) {
-
-                                    Log.d("FDSAOIFJOSASDFAF", lock.getName());
-                                    mHandler.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            showOverlay();
-                                        }
-                                    });
-                                }
-                                currentAppsTempt = appName;
+                        if (names.contains(appName)) {
+                            if (currentAppsTempt != appName) {
+                                Log.d("trueeeeaa", appName);
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        showOverlayPassWord();
+                                    }
+                                });
                             }
+
                         }
 
+                        currentAppsTempt = appName;
+                        // cai nay de check khi nguoi dung bam ung dung gan day
+                        recentappsApp = appName ;
 
+
+                        Log.d("loiroaioa", appName);
                     } catch (PackageManager.NameNotFoundException e) {
-                        Log.d("loiroaioa", e.toString());
                     }
                 }
             }
@@ -188,194 +229,181 @@ public class AppCheckService extends AccessibilityService implements   View.OnTo
         }
     }
 
-    private void showOverlay() {
 
+    private void showPassword() {
+        try {
+            // Tạo một Intent để chuyển từ Service sang Activity
+            Intent activityIntent = new Intent(AppCheckService.this, OverlayActivity.class);
+            // Đưa các dữ liệu cần thiết vào Intent nếu cần
+            activityIntent.putExtra("key", "value");
+            // Bắt đầu Activity mới từ Service
+            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(activityIntent);
+        } catch (Exception e) {
+            Log.d("Fsfsaf", e.toString());
+        }
+    }
 
+    private void showOverlayPassWord() {
         int layoutParamsType;
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             layoutParamsType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        }
-        else {
+        } else {
             layoutParamsType = WindowManager.LayoutParams.TYPE_PHONE;
         }
 
-        sharedPreferences = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
 
-        String password = sharedPreferences.getString("password", "null");
-
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        LayoutInflater li = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        windowManager = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                layoutParamsType,
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 0,
                 PixelFormat.TRANSLUCENT
         );
-        params.gravity = Gravity.CENTER | Gravity.START;
+        params.gravity = Gravity.CENTER;
         params.x = 0;
         params.y = 0;
 
+        FrameLayout wrapper = new FrameLayout(this) {
+            @Override
+            public boolean dispatchKeyEvent(KeyEvent event) {
+                if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+                    removeView22(myview);
+                    // handle the back button code;
+                    return true;
+                }
+                return super.dispatchKeyEvent(event);
+            }
+
+            public void onCloseSystemDialogs(String reason) {
+                System.out.println("System dialog " + reason);
+
+                if (reason.equals("homekey")) {
+
+                    Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+                    homeIntent.addCategory(Intent.CATEGORY_HOME);
+                    homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(homeIntent);
+
+                    mHandler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            removeView22(myview);
+                        }
+                    }, 200);
+
+                } else if (reason.equals("recentapps")) {
+                    if(recentappsApp.equals(currentAppsTempt))
+                    {
+                        removeView22(myview);
 
 
+
+
+                    }else {
+                        showOverlayPassWord();
+
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                PackageManager packageManager = getPackageManager();
+                                Intent launchIntent = packageManager.getLaunchIntentForPackage(packageName);
+
+                                if (launchIntent != null) {
+                                    startActivity(launchIntent);
+                                } else {
+                                }
+
+                            }
+                        }, 1000);
+                    }
+                }
+            }
+
+
+        };
+
+        myview = li.inflate(R.layout.password_layout, wrapper);   // here set into your own layout
+        windowManager.addView(myview, params);
+
+
+//        sharedPreferences = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+//
+//        String password = sharedPreferences.getString("password", "null");
+//
+//
 //        LayoutInflater inflater = LayoutInflater.from(this);
 //        View overlayView = inflater.inflate(R.layout.password_layout, null);
 //        ImageView imgIcon = overlayView.findViewById(R.id.img_iconApp);
 //        TextView tvName = overlayView.findViewById(R.id.tvName);
 //        PatternLockView lockView = overlayView.findViewById(R.id.pattern_lock_view);
-//        lockView.addPatternLockListener(new PatternLockViewListener() {
-//            @Override
-//            public void onStarted() {
-//            }
-//
-//            @Override
-//            public void onProgress(List<PatternLockView.Dot> progressPattern) {
-//            }
-//
-//            @Override
-//            public void onComplete(List<PatternLockView.Dot> pattern) {
-//                // if drawn pattern is equal to created pattern you will navigate to home screen
-//                if (password.equals(PatternLockUtils.patternToString(lockView, pattern))) {
-//                    windowManager.removeView(overlayView);
-//
-////                    Intent intent = new Intent(getApplicationContext(), ProgramActivity.class);
-////                    startActivity(intent);
-////                    finish();
-//
-//
-//                } else {
-//                    lockView.clearPattern();
-//                    Log.d("90r97e0afsdf", ";lasdfa");
-//
-//                }
-//            }
-//
-//            @Override
-//            public void onCleared() {
-//
-//            }
-//        });
-//
 //
 //        overlayView.setFocusable(true);
 //        overlayView.setFocusableInTouchMode(true);
 //        overlayView.requestFocus();
-//        overlayView.setOnKeyListener(new View.OnKeyListener() {
-//            @Override
-//            public boolean onKey(View v, int keyCode, KeyEvent event) {
-//                Log.d("009212", keyCode + " ");
-//                int temp = keyCode;
-//                if (keyCode == KeyEvent.KEYCODE_BACK) {
-//                    Log.d("3244fs", "Back ");
 //
-//                } else if (keyCode == KeyEvent.KEYCODE_HOME) {
-//                    Log.d("3244fs", "HOME ");
+//        // Thêm sự kiện KeyEvent cho overlayView
+//      overlayView = new FrameLayout(this)
+//      {
+//          @Override
+//          public boolean dispatchKeyEvent(KeyEvent event) {
+//              if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+//                  Log.v(TAG, "BACK Button Pressed");
+//                  return true;
+//              }
+//              return super.dispatchKeyEvent(event);
+//          }
 //
-//                } else {
-//                    Log.d("3244fs", "SWith ");
+//          public void onCloseSystemDialogs(String reason) {
+//              Log.d("fsdfsadfa",)
+//              if (reason.equals("homekey")) {
+//                  Intent homeIntent = new Intent(Intent.ACTION_MAIN);
+//                  homeIntent.addCategory(Intent.CATEGORY_HOME);
+//                  homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                  getApplication().startActivity(homeIntent);
 //
-//                }
+//              }
+//          }
 //
-//                return false;
+//      };
 //
-//            }
-//        });
-
-        FrameLayout overlayView = new FrameLayout(this){
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent event) {
-
-                Log.d("|504325320","3454235");
-
-                // Only fire on the ACTION_DOWN event, or you'll get two events (one for _DOWN, one for _UP)
-                if (event.getAction() == KeyEvent.ACTION_DOWN) {
-
-                    // Check if the HOME button is pressed
-                    if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-
-                        Log.v(TAG, "BACK Button Pressed");
-
-                        // As we've taken action, we'll return true to prevent other apps from consuming the event as well
-                        return true;
-                    }
-                }
-
-                // Otherwise don't intercept the event
-                return super.dispatchKeyEvent(event);
-            }
-        };
-
-
-        LayoutInflater inflater = ((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE));
-
-        if (inflater != null) {
-            View   floatyView = inflater.inflate(R.layout.password_layout, overlayView);
-            floatyView.setOnTouchListener(this);
-            windowManager.addView(floatyView, params);
-        }
-        else {
-            Log.e("SAW-example", "Layout Inflater Service is null; can't inflate and display R.layout.floating_view");
-        }
-
+//
 //        windowManager.addView(overlayView, params);
-
     }
 
-
-    private void showPasswordScreen() {
-
-        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-
-        WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
-
-        LayoutInflater inflater = LayoutInflater.from(this);
-        passwordView = inflater.inflate(R.layout.password_layout, null);
-
-//        EditText passwordEditText = passwordView.findViewById(R.id.passwordEditText);
-//        Button submitButton = passwordView.findViewById(R.id.submitButton);
-//        submitButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                String password = passwordEditText.getText().toString();
-//
-//                if (password.equals("your_password")) {
-//
-//                    windowManager.removeView(passwordView);
-//                } else {
-//
-//                }
-//            }
-//        });
-
-
-        windowManager.addView(passwordView, params);
-
-    }
-
-
-    private void hidePasswordScreen() {
-        if (windowManager != null && passwordView != null) {
-            try {
-                windowManager.removeView(passwordView);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    private void removeView22(View view) {
+        windowManager.removeView(view);
     }
 
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-
         unregisterReceiver(mBroadcast);
     }
 
     @Override
-    public void onAccessibilityEvent(AccessibilityEvent event) {
-
+    public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
+        int eventType = accessibilityEvent.getEventType();
+        switch (eventType) {
+            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED:
+                // Xử lý sự kiện thay đổi trạng thái của cửa sổ
+                String packageName = accessibilityEvent.getPackageName().toString();
+                String className = accessibilityEvent.getClassName().toString();
+                System.out.println("Opened package: " + packageName + ", class: " + className);
+                // Xử lý logic của bạn khi một ứng dụng được mở
+                break;
+            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED:
+                // Xử lý sự kiện thay đổi nội dung cửa sổ
+                break;
+            // Các loại sự kiện khác có thể được xử lý tùy ý
+        }
     }
 
     @Override
@@ -384,34 +412,24 @@ public class AppCheckService extends AccessibilityService implements   View.OnTo
     }
 
     @Override
-    public boolean onKeyEvent(KeyEvent event) {
-        Log.d("Fdsfasfa23","43434");
-        int keyCode = event.getKeyCode();
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_BACK:
-                // Xử lý khi nút back được bấm
-                Log.d("AccessibilityService", "Back button pressed");
-                return true;
-            case KeyEvent.KEYCODE_HOME:
-                // Xử lý khi nút home được bấm
-                Log.d("AccessibilityService", "Home button pressed");
-                return true;
-            case KeyEvent.KEYCODE_APP_SWITCH:
-                // Xử lý khi nút recent apps được bấm
-                Log.d("AccessibilityService", "Recent apps button pressed");
-                return true;
-            default:
-                // Xử lý các trường hợp khác
-                return super.onKeyEvent(event);
-        }
+    protected void onServiceConnected() {
+        super.onServiceConnected();
+        // Cấu hình Accessibility Service để theo dõi sự kiện cụ thể
+        setServiceInfo();
+    }
+
+    private void setServiceInfo() {
+        // Thiết lập các thuộc tính cho Accessibility Service
+        AccessibilityServiceInfo info = new AccessibilityServiceInfo();
+        // Chỉ định loại sự kiện mà service sẽ theo dõi
+        info.eventTypes = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED | AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED;
+        // Không giới hạn gói ứng dụng nào được theo dõi (null)
+        info.packageNames = null;
+        // Chỉ định các tính năng mà service sẽ cung cấp
+        info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
+        // Thiết lập thông tin service
+        setServiceInfo(info);
     }
 
 
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-
-        Log.d("2321313","Fsfasfafht");
-
-        return false;
-    }
 }

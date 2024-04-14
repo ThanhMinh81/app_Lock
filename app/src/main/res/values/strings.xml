@@ -13,5 +13,6 @@
 
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
+    <string name="title_activity_main2">MainActivity2</string>
 
 </resources>
