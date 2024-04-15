@@ -4,6 +4,6 @@ import com.example.applock.db.Lock;
 
 public interface ItemClickListenerLock {
 
-    void clickItemLock(Lock lock);
+    void clickItemLock(Lock lock , boolean removeItemLock);
 
 }

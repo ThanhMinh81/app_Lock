@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,7 +28,6 @@ public class SettingFragment extends Fragment {
 
     PatternLockView mPatternLockView;
 
-
     public SettingFragment() {
     }
 
@@ -46,12 +46,10 @@ public class SettingFragment extends Fragment {
         mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
             @Override
             public void onStarted() {
-
             }
 
             @Override
             public void onProgress(List<PatternLockView.Dot> progressPattern) {
-
             }
 
             @Override
@@ -66,11 +64,6 @@ public class SettingFragment extends Fragment {
                 } catch (Exception e) {
                     Log.d("390427479", e.toString());
                 }
-
-                // Intent to navigate to home screen when password added is true
-//                Intent intent = new Intent(getContext(), ProgramActivity.class);
-//                startActivity(intent);
-//                finish();
 
             }
 

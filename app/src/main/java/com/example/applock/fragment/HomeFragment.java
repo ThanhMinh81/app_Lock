@@ -1,7 +1,6 @@
 package com.example.applock.fragment;
 
 
-
 import static android.app.ProgressDialog.show;
 
 import android.app.job.JobInfo;
@@ -17,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -38,18 +38,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
-    private static final int JOB_ID =123 ;
+    private static final int JOB_ID = 123;
     View view;
     HomeAdapter homeAdapter;
     RecyclerView rcvHome;
     ArrayList<ApplicationInfo> infoArrayList;
-
     ItemClickListenerLock itemClickListenerLock;
-
     LockDatabase lockDatabase;
 
     ArrayList<Lock> locks;
 
+    LockDatabase database;
+
+    Button btnOff;
 
     @Nullable
     @Override
@@ -57,65 +58,78 @@ public class HomeFragment extends Fragment {
 
         view = inflater.inflate(R.layout.fragment_home, container, false);
         rcvHome = view.findViewById(R.id.rcvHome);
+        btnOff = view.findViewById(R.id.btnOFF);
 
         infoArrayList = new ArrayList<>();
         locks = new ArrayList<>();
 
-        LockDatabase database = Room.databaseBuilder(getActivity(), LockDatabase.class, "locks_database")
+        database = Room.databaseBuilder(getActivity(), LockDatabase.class, "locks_database")
                 .allowMainThreadQueries()
                 .build();
 
-        locks.addAll(database.lockDAO().getListApps());
+        // them tat ca item lock vao cho locks
+        locks.addAll(getListAppLock());
+
+        Intent intent = new Intent(getContext(), AppCheckService.class);
+
+        getContext().startService(intent);
+
+
+        // send list adappter
+        ArrayList<String> strings = new ArrayList<>();
+
+
 
         itemClickListenerLock = new ItemClickListenerLock() {
+
             @Override
-            public void clickItemLock(Lock lock) {
-                database.lockDAO().insert(lock);
+            public void clickItemLock(Lock lock, boolean removeItemLock) {
+                if (removeItemLock) {
+                    Log.d("42344145", "43");
+                    // xoa element app lock
+                    database.lockDAO().removeAppLock(lock.getIdApp());
+                    // gui lai list duoc updat cho service
+                    locks.remove(lock);
+                    Intent intent1 = new Intent(getContext(), AppCheckService.class);
+                    intent.putParcelableArrayListExtra("listLock", locks);
+                    getContext().startService(intent);
+                } else {
+                    database.lockDAO().insert(lock);
+                    locks.add(lock);
+                    intent.putParcelableArrayListExtra("listLock", locks);
+                    getContext().startService(intent);
+                }
             }
         };
 
 
-        homeAdapter = new HomeAdapter(getContext(), infoArrayList, itemClickListenerLock);
+        homeAdapter = new HomeAdapter(getContext(), infoArrayList, itemClickListenerLock, locks);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
 
         rcvHome.setLayoutManager(layoutManager);
         rcvHome.setAdapter(homeAdapter);
 
+        btnOff.setOnClickListener(v -> {
+            Intent intent1 = new Intent(getContext(), AppCheckService.class);
+            getContext().stopService(intent1);
+        });
+
+
+        for (Lock s : locks) {
+            strings.add(s.getName());
+        }
+
+        homeAdapter.setArrayLock(strings);
+        homeAdapter.notifyDataSetChanged();
+
         getListAppSystem();
 
-
-
-
-
-//        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-//        startActivity(intent);
-
-
-//        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-//        startActivity(intent);
-
-
-        Intent intent = new Intent(getContext(), AppCheckService.class);
-//        intent.putExtra("listData", locks);
-        getContext().startService(intent);
-
-
-
-
-//       try {
-//           JobSchedulerHelper.scheduleJob(getContext());
-//       }catch (Exception e)
-//       {
-//           Log.d("fsafa",e.toString());
-//       }
-
-//        checkAccessibilityPermission();
 
         return view;
     }
 
-    public boolean checkAccessibilityPermission () {
+    public boolean checkAccessibilityPermission() {
         int accessEnabled = 0;
         try {
             accessEnabled = Settings.Secure.getInt(getContext().getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED);
@@ -137,23 +151,24 @@ public class HomeFragment extends Fragment {
 
 
     private void getListAppSystem() {
-
         List<ApplicationInfo> installedApps = getContext().getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
-
         int i = 0;
         ArrayList<ApplicationInfo> applicationInfos = new ArrayList<>();
-
 
         for (ApplicationInfo appInfo : installedApps) {
             if (getContext().getPackageManager().getLaunchIntentForPackage(appInfo.packageName) != null) {
                 applicationInfos.add(appInfo);
             }
         }
-
         infoArrayList.addAll(applicationInfos);
         homeAdapter.notifyDataSetChanged();
 
+    }
 
+    private ArrayList<Lock> getListAppLock() {
+        ArrayList<Lock> lockArrayList = new ArrayList<>();
+        lockArrayList.addAll(database.lockDAO().getListApps());
+        return lockArrayList;
     }
 
 

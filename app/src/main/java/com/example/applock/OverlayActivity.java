@@ -20,8 +20,6 @@ public class OverlayActivity extends AppCompatActivity {
 
         setContentView(R.layout.password_layout);
 
-
-
     }
 
 
