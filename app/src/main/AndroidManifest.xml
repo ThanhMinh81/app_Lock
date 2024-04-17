@@ -51,6 +51,7 @@
 
 
         <receiver
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
             android:name=".AppCheckService"
             android:exported="true">
 
@@ -64,6 +65,22 @@
 
 
         </receiver>
+
+
+        <activity
+            android:name=".OverlayActivity"
+            android:launchMode="singleInstance"
+            android:configChanges="orientation|screenSize"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:taskAffinity="">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+
 
 
 

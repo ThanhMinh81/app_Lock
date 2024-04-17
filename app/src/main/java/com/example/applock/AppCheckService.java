@@ -2,6 +2,7 @@ package com.example.applock;
 
 import static com.example.applock.MyApplication.CHAINNEL_ID;
 
+import android.accessibilityservice.AccessibilityService;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -14,7 +15,15 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.AdaptiveIconDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.VectorDrawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -26,11 +35,13 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.accessibility.AccessibilityEvent;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
 
@@ -70,6 +81,10 @@ public class AppCheckService extends Service {
     String packageName = "";
     LockDatabase database;
 
+    boolean checkThread = true;
+    private String appName;
+    private ApplicationInfo applicationInfo;
+    private String colorBackgroundPassword;
 
     @Override
     public void onCreate() {
@@ -151,23 +166,156 @@ public class AppCheckService extends Service {
     private void checkRunningApps() {
         while (true) {
 
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-
             UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
             long currentTime = System.currentTimeMillis();
             List<UsageStats> stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - 1000 * 10, currentTime);
 
-            if (stats != null) {
+            if (checkThread) {
+//                try {
+//                    Thread.sleep(200);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
+
+
+                if (stats != null) {
+
+                    SortedMap<Long, UsageStats> runningTasks = new TreeMap<>();
+
+                    for (UsageStats usageStats : stats) {
+                        runningTasks.put(usageStats.getLastTimeUsed(), usageStats);
+                    }
+
+                    if (!runningTasks.isEmpty()) {
+
+                        String packageName = runningTasks.get(runningTasks.lastKey()).getPackageName();
+
+                        PackageManager packageManager = getPackageManager();
+
+                        try {
+
+                              applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
+
+
+                            // Lấy biểu tượng ứng dụng dưới dạng Drawable
+                            Drawable iconDrawable = applicationInfo.loadIcon(packageManager);
+
+                            // Chuyển đổi Drawable thành Bitmap
+                            Bitmap iconBitmap = getBitmapFromDrawable(iconDrawable);
+
+                            if (iconBitmap != null) {
+                                // Tính toán tọa độ dựa trên phần trăm của kích thước biểu tượng
+                                int pointX = (int) (0.3 * iconBitmap.getWidth());
+                                int pointY = (int) (0.3 * iconBitmap.getHeight());
+
+                                // Lấy màu tại điểm được chỉ định
+                                int color = iconBitmap.getPixel(pointX, pointY);
+
+                                // Chuyển đổi màu sang chuỗi hex
+                                 colorBackgroundPassword = String.format("#%06X", (0xFFFFFF & color));
+//                                Log.d("532455",colorBackgroundPassword.toString());
+                            } else {
+
+                            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                            packageName = applicationInfo.packageName;
+
+                            // lay app hien tai dang mo
+                            appName = (String) packageManager.getApplicationLabel(applicationInfo);
+
+
+
+
+
+                            // appName = youtube
+                            // currentAppsTemp = lockapp
+                            // youtube thuoc lock  ==> show
+
+
+                            // appName = message
+                            // currentAppsTemp  = youtube
+                            // message thuoc lock ==> show
+
+
+                            // appName = youtube
+                            // currentAppsTemp = lockapp
+                            // yoututbe ==> show
+
+
+                            // appName = home
+                            // currentAppsTemp = youtube
+                            // ko show
+
+                            // appName = youtube
+                            // currentTempt == home
+                            /// ytb thuoc ==> show
+
+
+                            // appName = currentAppsTempt = home
+                            // ytb != home
+                            // thread stop
+
+
+                            //  appName =  gần đây
+
+
+                            if (names.contains(appName)) {
+                                if (currentAppsTemp != appName) {
+
+                                    Log.d("anhlatdepjtrai", appName);
+
+                                    mHandler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            showOverlayPassWord();
+//                                        showOverlayPasssWord2();
+                                        }
+                                    });
+                                }
+                            }
+
+                            // curentapp tmp = youtube
+
+                            currentAppsTemp = appName;
+                            // cai nay de check khi nguoi dung bam ung dung gan day
+                            recentappsApp = appName;
+//                            Log.d("loiroaioa", appName);
+
+                        } catch (PackageManager.NameNotFoundException e) {
+                        }
+                    }
+                }
+            } else {
+
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
 
                 SortedMap<Long, UsageStats> runningTasks = new TreeMap<>();
 
                 for (UsageStats usageStats : stats) {
                     runningTasks.put(usageStats.getLastTimeUsed(), usageStats);
                 }
+
                 if (!runningTasks.isEmpty()) {
 
                     String packageName = runningTasks.get(runningTasks.lastKey()).getPackageName();
@@ -177,38 +325,25 @@ public class AppCheckService extends Service {
                     try {
 
                         ApplicationInfo applicationInfo = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA);
-                        packageName = applicationInfo.packageName;
 
                         // lay app hien tai dang mo
-                        String appName = (String) packageManager.getApplicationLabel(applicationInfo);
+                        appName = (String) packageManager.getApplicationLabel(applicationInfo);
 
-                        if (names.contains(appName)) {
-                            if (currentAppsTemp != appName) {
-
-                                Log.d("anhlatdepjtrai", appName);
-
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        showOverlayPassWord();
-                                    }
-                                });
-                            }
+                        if (currentAppsTemp != appName) {
+                            checkThread = true;
                         }
-
-                        currentAppsTemp = appName;
-                        // cai nay de check khi nguoi dung bam ung dung gan day
-                        recentappsApp = appName;
-                        Log.d("loiroaioa", appName);
 
                     } catch (PackageManager.NameNotFoundException e) {
                     }
                 }
+
             }
         }
     }
 
+
     private void showOverlayPassWord() {
+
         int layoutParamsType;
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -227,6 +362,7 @@ public class AppCheckService extends Service {
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
                 PixelFormat.TRANSLUCENT
         );
+
         params.gravity = Gravity.CENTER;
         params.x = 0;
         params.y = 0;
@@ -252,11 +388,38 @@ public class AppCheckService extends Service {
                     homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(homeIntent);
 
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     hideOverlayPassword(myview);
 
 
                 } else if (reason.equals("recentapps")) {
 
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+                    currentAppsTemp = appName;
+                    Log.d("34234", "sadfaf");
+                    Log.d("appps", currentAppsTemp + " = = " + recentappsApp);
+                    hideOverlayPassword(myview);
+
+                    checkThread = false;
+                    // duwnfg thread
+                    currentAppsTemp = appName;
+
+                    // dung thread
+                    // cho appName va currentTempt = nhau
+                    // nếu tên đó mà có trong mảng thì bật lại
+
+                    Log.d("34234", "sadfaf");
+                    Log.d("appps", currentAppsTemp + " = = " + recentappsApp);
                     hideOverlayPassword(myview);
 
                 }
@@ -264,13 +427,19 @@ public class AppCheckService extends Service {
         };
 
 
+
         myview = li.inflate(R.layout.password_layout, wrapper);
+
+        ConstraintLayout layoutPassWord = myview.findViewById(R.id.layoutPassword);
+        layoutPassWord.setBackgroundColor(Color.parseColor(colorBackgroundPassword));
+
         sharedPreferences = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         String password = sharedPreferences.getString("password", "null");
         LayoutInflater inflater = LayoutInflater.from(this);
         ImageView imgIcon = myview.findViewById(R.id.img_iconApp);
+        imgIcon.setImageDrawable(applicationInfo.loadIcon(getApplicationContext().getPackageManager()));
         TextView tvName = myview.findViewById(R.id.tvName);
-        PatternLockView lockView = myview.findViewById(R.id.pattern_lock_view);
+//        PatternLockView lockView = myview.findViewById(R.id.pattern_lock_view);
         windowManager.addView(myview, params);
 
         tvName.setOnClickListener(v -> Log.d("2121212", "fsadfafafsa"));
@@ -278,33 +447,33 @@ public class AppCheckService extends Service {
         myview.setFocusable(true);
         myview.setFocusableInTouchMode(true);
         myview.requestFocus();
-        lockView.addPatternLockListener(new PatternLockViewListener() {
-            @Override
-            public void onStarted() {
-            }
-
-            @Override
-            public void onProgress(List<PatternLockView.Dot> progressPattern) {
-            }
-
-            @Override
-            public void onComplete(List<PatternLockView.Dot> pattern) {
-
-                if (password.equals(PatternLockUtils.patternToString(lockView, pattern))) {
-
-                    hideOverlayPassword(myview);
-
-                } else {
-
-                }
-
-            }
-
-            @Override
-            public void onCleared() {
-
-            }
-        });
+//        lockView.addPatternLockListener(new PatternLockViewListener() {
+//            @Override
+//            public void onStarted() {
+//            }
+//
+//            @Override
+//            public void onProgress(List<PatternLockView.Dot> progressPattern) {
+//            }
+//
+//            @Override
+//            public void onComplete(List<PatternLockView.Dot> pattern) {
+//
+//                if (password.equals(PatternLockUtils.patternToString(lockView, pattern))) {
+//
+//                    hideOverlayPassword(myview);
+//
+//                } else {
+//
+//                }
+//
+//            }
+//
+//            @Override
+//            public void onCleared() {
+//
+//            }
+//        });
 
 
     }
@@ -312,6 +481,7 @@ public class AppCheckService extends Service {
     private void hideOverlayPassword(View view) {
         windowManager.removeView(view);
     }
+
 
     @Nullable
     @Override
@@ -322,5 +492,25 @@ public class AppCheckService extends Service {
     public void LogFunc() {
         Log.d("34314", "234");
     }
+
+    private static Bitmap getBitmapFromDrawable(Drawable drawable) {
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (drawable instanceof VectorDrawable || drawable instanceof AdaptiveIconDrawable) {
+                // Tạo một Bitmap mới và vẽ Drawable lên đó
+                Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(bitmap);
+                drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                drawable.draw(canvas);
+                return bitmap;
+            } else {
+
+            }
+        }
+        return null;
+    }
+
+
 
 }

@@ -1,7 +1,10 @@
 package com.example.applock;
 
+import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.view.Gravity;
+import android.view.WindowManager;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
@@ -19,6 +22,8 @@ public class OverlayActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
 
         setContentView(R.layout.password_layout);
+
+
 
     }
 

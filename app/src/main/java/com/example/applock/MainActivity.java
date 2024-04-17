@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -37,6 +38,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.room.Room;
 import androidx.viewpager.widget.ViewPager;
 
+import com.example.applock.Interface.OnHomePressedListener;
 import com.example.applock.adapter.ViewPagerAdapter;
 import com.example.applock.db.LockDatabase;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -176,19 +178,36 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
 
-        spinnerSelected.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        HomeWatcher mHomeWatcher = new HomeWatcher(this);
+        mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                ((TextView) view).setTextColor(Color.WHITE);
-                ((TextView) view).setTextSize(18);
+            public void onHomePressed() {
 
+                Log.e("AHSAN", "onHomePressed: ");
             }
 
+
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            public void onHomeLongPressed() {
+                Log.e("AHSAN", "onHomePressed: ");
 
             }
         });
+
+
+//        spinnerSelected.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//            @Override
+//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//                ((TextView) view).setTextColor(Color.WHITE);
+//                ((TextView) view).setTextSize(18);
+//
+//            }
+//
+//            @Override
+//            public void onNothingSelected(AdapterView<?> parent) {
+//
+//            }
+//        });
 
         int appBarPadding = getResources().getDimensionPixelSize(R.dimen.app_bar_padding);
         int menuItemSize = getResources().getDimensionPixelSize(R.dimen.app_bar_size_menu_item);
@@ -364,6 +383,17 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //            super.onBackPressed();
 //        }
 //    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_HOME) {
+            Log.d("52fgdgsdgsdgdsgsg","hufuhfduhisfudishfdushi");
+            // Xử lý khi nút BACK được nhấn
+            return true; // Trả về true để ngăn chặn hành động mặc định của nút BACK
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
 
 }
