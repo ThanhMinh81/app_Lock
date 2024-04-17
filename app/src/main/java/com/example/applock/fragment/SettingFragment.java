@@ -26,7 +26,7 @@ public class SettingFragment extends Fragment {
 
     View view;
 
-    PatternLockView mPatternLockView;
+//    PatternLockView mPatternLockView;
 
     public SettingFragment() {
     }
@@ -38,40 +38,40 @@ public class SettingFragment extends Fragment {
 
         view = inflater.inflate(R.layout.fragment_setting, container, false);
 
-        mPatternLockView = (PatternLockView) view.findViewById(R.id.pattern_lock_view);
+//        mPatternLockView = (PatternLockView) view.findViewById(R.id.pattern_lock_view);
 
         // cai nay xet cho no khong thay duoc hinh ve nua
 //        mPatternLockView.setInStealthMode(true);
 
-        mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
-            @Override
-            public void onStarted() {
-            }
-
-            @Override
-            public void onProgress(List<PatternLockView.Dot> progressPattern) {
-            }
-
-            @Override
-            public void onComplete(List<PatternLockView.Dot> pattern) {
-
-                // Shared Preferences to save state
-                try {
-                    SharedPreferences sharedPreferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("password", PatternLockUtils.patternToString(mPatternLockView, pattern));
-                    editor.apply();
-                } catch (Exception e) {
-                    Log.d("390427479", e.toString());
-                }
-
-            }
-
-            @Override
-            public void onCleared() {
-
-            }
-        });
+//        mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
+//            @Override
+//            public void onStarted() {
+//            }
+//
+//            @Override
+//            public void onProgress(List<PatternLockView.Dot> progressPattern) {
+//            }
+//
+//            @Override
+//            public void onComplete(List<PatternLockView.Dot> pattern) {
+//
+//                // Shared Preferences to save state
+//                try {
+//                    SharedPreferences sharedPreferences = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+//                    SharedPreferences.Editor editor = sharedPreferences.edit();
+//                    editor.putString("password", PatternLockUtils.patternToString(mPatternLockView, pattern));
+//                    editor.apply();
+//                } catch (Exception e) {
+//                    Log.d("390427479", e.toString());
+//                }
+//
+//            }
+//
+//            @Override
+//            public void onCleared() {
+//
+//            }
+//        });
 
 
         return view;
