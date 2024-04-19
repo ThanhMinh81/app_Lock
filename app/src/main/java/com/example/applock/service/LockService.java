@@ -1,8 +1,7 @@
-package com.example.applock;
+package com.example.applock.service;
 
 import static com.example.applock.MyApplication.CHAINNEL_ID;
 
-import android.accessibilityservice.AccessibilityService;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -11,12 +10,10 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -35,9 +32,6 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.accessibility.AccessibilityEvent;
-import android.view.animation.Animation;
-import android.view.animation.ScaleAnimation;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -52,7 +46,8 @@ import androidx.room.Room;
 import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
-import com.example.applock.dao.DataUpdateListener;
+import com.example.applock.Broadcast;
+import com.example.applock.R;
 import com.example.applock.db.Lock;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.fragment.HomeFragment;
@@ -62,9 +57,9 @@ import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-public class AppCheckService extends Service {
+public class LockService extends Service {
 
-    private static final String TAG = "AppCheckService";
+    private static final String TAG = "LockService";
     private static final int CHANNEL_DEFAULT_IMPORTANCE_SERVICE = 1;
 
     public static Notification notification;
@@ -180,13 +175,13 @@ public class AppCheckService extends Service {
 
                 UsageStatsManager usageStatsManager = (UsageStatsManager) getSystemService(Context.USAGE_STATS_SERVICE);
                 long currentTime = System.currentTimeMillis();
-                List<UsageStats> stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - 1000 * 10, currentTime);
+                List<UsageStats> stats = usageStatsManager.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, currentTime - 10000, currentTime);
 
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
+//                try {
+//                    Thread.sleep(200);
+//                } catch (InterruptedException e) {
+//                    throw new RuntimeException(e);
+//                }
 
                 if (stats != null) {
 
@@ -224,9 +219,11 @@ public class AppCheckService extends Service {
 
                             packageName = applicationInfo.packageName;
 
+                            Log.d("f3943434",packageName.toString());
+
                             appName = (String) packageManager.getApplicationLabel(applicationInfo);
 
-                           boolean check  =  isAppActive(1000);
+                            boolean check = isAppActive(1000);
 
                             Log.d("532455", check + " ");
 
@@ -272,7 +269,6 @@ public class AppCheckService extends Service {
 
         TextView tvNameMode;
 
-
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             layoutParamsType = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
@@ -315,15 +311,15 @@ public class AppCheckService extends Service {
                     homeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(homeIntent);
 
-                    try {
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+//                    try {
+//                        Thread.sleep(100);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
 
-                    if (myview.isAttachedToWindow()) {
+//                    if (myview.isAttachedToWindow()) {
                         hideOverlayPassword(myview);
-                    }
+//                    }
 
 
                 } else if (reason.equals("recentapps")) {
@@ -486,12 +482,10 @@ public class AppCheckService extends Service {
         windowManager.addView(myview, params);
         patternLockView.addPatternLockListener(new PatternLockViewListener() {
             @Override
-            public void onStarted() {
-            }
+            public void onStarted() {}
 
             @Override
-            public void onProgress(List<PatternLockView.Dot> progressPattern) {
-            }
+            public void onProgress(List<PatternLockView.Dot> progressPattern) {}
 
             @Override
             public void onComplete(List<PatternLockView.Dot> pattern) {
@@ -504,14 +498,22 @@ public class AppCheckService extends Service {
 
                 } else {
 
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            tvNameMode.setText("Error");
+                            patternLockView.setViewMode(PatternLockView.PatternViewMode.WRONG);
+                        }
+                    }, 200);
+
+                    patternLockView.clearPattern();
                 }
 
             }
 
             @Override
-            public void onCleared() {
-
-            }
+            public void onCleared() {}
         });
 
 

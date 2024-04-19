@@ -3,10 +3,7 @@ package com.example.applock.fragment;
 
 import static android.app.ProgressDialog.show;
 
-import android.app.job.JobInfo;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -15,9 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,9 +21,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
-import com.example.applock.AppCheckService;
+import com.example.applock.service.LockService;
 import com.example.applock.Interface.ItemClickListenerLock;
-import com.example.applock.MainActivity;
 import com.example.applock.R;
 import com.example.applock.adapter.HomeAdapter;
 import com.example.applock.db.Lock;
@@ -70,7 +64,7 @@ public class HomeFragment extends Fragment {
         // them tat ca item lock vao cho locks
         locks.addAll(getListAppLock());
 
-        Intent intent = new Intent(getContext(), AppCheckService.class);
+        Intent intent = new Intent(getContext(), LockService.class);
 
         getContext().startService(intent);
 
@@ -90,7 +84,7 @@ public class HomeFragment extends Fragment {
                     database.lockDAO().removeAppLock(lock.getIdApp());
                     // gui lai list duoc updat cho service
                     locks.remove(lock);
-                    Intent intent1 = new Intent(getContext(), AppCheckService.class);
+                    Intent intent1 = new Intent(getContext(), LockService.class);
                     intent.putParcelableArrayListExtra("listLock", locks);
                     getContext().startService(intent);
                 } else {
@@ -111,7 +105,7 @@ public class HomeFragment extends Fragment {
         rcvHome.setAdapter(homeAdapter);
 
         btnOff.setOnClickListener(v -> {
-            Intent intent1 = new Intent(getContext(), AppCheckService.class);
+            Intent intent1 = new Intent(getContext(), LockService.class);
             getContext().stopService(intent1);
         });
 

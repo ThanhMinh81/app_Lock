@@ -11,7 +11,9 @@ import androidx.room.PrimaryKey;
 public class Lock  implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private int idApp;
+    // id app , AppInforName
     private  String name ;
+
 
     public Lock() {
     }
@@ -20,6 +22,9 @@ public class Lock  implements Parcelable {
         this.idApp = idApp;
         this.name = name;
     }
+
+
+
 
     protected Lock(Parcel in) {
         idApp = in.readInt();

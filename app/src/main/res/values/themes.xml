@@ -14,4 +14,11 @@
         <item name="actionMenuTextColor">@android:color/white</item>
     </style>
 
+
+    <style name="WrapContentDialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="windowMinWidthMajor">0%</item>
+        <item name="windowMinWidthMinor">0%</item>
+    </style>
+
+
 </resources>
