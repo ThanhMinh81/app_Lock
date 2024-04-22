@@ -395,5 +395,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onKeyDown(keyCode, event);
     }
 
+    public LockDatabase getDatabase() {
+        return database;
+    }
+
 
 }

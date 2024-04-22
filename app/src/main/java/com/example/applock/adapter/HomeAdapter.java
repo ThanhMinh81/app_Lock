@@ -14,34 +14,22 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.applock.Interface.ItemClickListenerLock;
 import com.example.applock.R;
-import com.example.applock.db.Lock;
+import com.example.applock.db.LockDatabase;
+import com.example.applock.model.Lock;
 
 import java.util.ArrayList;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
 
-    Context context;
+    private Context context;
+    private ArrayList<Lock> locks;
 
-    // hien thi tat ca app ra home
-    ArrayList<ApplicationInfo> applicationInfos;
+    private LockDatabase lockDatabase;
 
-    // danh sach cac app dang bi khoa
-    // chi lay name
-    ArrayList<String> lockArrayList = new ArrayList<>();
-
-    // list lock
-
-
-    // list lock app database
-    ArrayList<Lock> locks;
-
-    ItemClickListenerLock itemClickListenerLock;
-
-    public HomeAdapter(Context context, ArrayList<ApplicationInfo> applicationInfos, ItemClickListenerLock itemClickListenerLock, ArrayList<Lock> locks) {
+    public HomeAdapter(Context context, ArrayList<Lock> locks, LockDatabase lockDatabase) {
         this.context = context;
-        this.applicationInfos = applicationInfos;
-        this.itemClickListenerLock = itemClickListenerLock;
         this.locks = locks;
+        this.lockDatabase = lockDatabase;
     }
 
     @NonNull
@@ -58,66 +46,50 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull HomeAdapter.ViewHolder holder, int position) {
 
-        Log.d("530453",lockArrayList.size() + " ");
+        Lock lock = locks.get(position);
+        ApplicationInfo applicationInfo = lock.getApplicationInfo();
 
-        ApplicationInfo appInfo = applicationInfos.get(position);
+        holder.tvNameApp.setText(applicationInfo.loadLabel(context.getPackageManager()));
+        holder.imgIcon.setImageDrawable(applicationInfo.loadIcon(context.getPackageManager()));
 
-        Lock lock = new Lock(0, appInfo.loadLabel(context.getPackageManager()).toString());
-
-        // neu app thuoc danh sach khoa
-        for (Lock lock1 : locks) {
-            // id cho Lock
-            if (lock1.getName().equals(appInfo.loadLabel(context.getPackageManager()).toString())) {
-                lock.setIdApp(lock1.getIdApp());
-            }
-        }
-
-        holder.tvNameApp.setText(appInfo.loadLabel(context.getPackageManager()));
-        holder.imgIcon.setImageDrawable(appInfo.loadIcon(context.getPackageManager()));
-
-        if (lockArrayList.contains(lock.getName())) {
+        if (lock.isStateLock()) {
             holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable._669338_lock_ic_icon, null));
+        }else {
+            holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_lock_circle, null));
+
         }
 
         holder.imgClock.setOnClickListener(v -> {
+            Log.d("345325fsa",lock.isStateLock() + " ");
+            if (lock.isStateLock()) {
+                // xóa khỏi mode lock
+                lock.setStateLock(false);
+                int updateState = lockDatabase.lockDAO().updateLock(lock);
 
-            if (lockArrayList.contains(lock.getName())) {
+                if (updateState != 0) {
+                    locks.set(position, lock);
+                    notifyItemChanged(position);
+                }
+            } else {
+                // them vao lock
+                lock.setStateLock(true);
 
-                Log.d("543252",lock.getName());
-                // xoa khoi list lock
+                int updateState = lockDatabase.lockDAO().updateLock(lock);
 
-                //                for (String s : lockArrayList) {
-//                    if (s.equals(lock.getName())) {
-//                        lockArrayList.remove(s);
-//                    }
-//                }
-
-
-                try{
-                    lockArrayList.remove(lock.getName());
-                    itemClickListenerLock.clickItemLock(lock, true);
-//                    holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_lock, null));
-                    notifyDataSetChanged();
-                }catch (Exception  e)
-                {
-                    Log.d("5342545dsa",e.toString());
+                if (updateState != 0) {
+                    locks.set(position, lock);
+                    notifyItemChanged(position);
                 }
 
+                Log.d("532523fasdf",updateState  + " ");
 
-            } else {
-                // them vao list lock
-//                holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable._669338_lock_ic_icon, null));
-                lockArrayList.add(lock.getName());
-                itemClickListenerLock.clickItemLock(lock, false);
-                notifyDataSetChanged();
             }
-
         });
     }
 
     @Override
     public int getItemCount() {
-        return applicationInfos.size();
+        return locks.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -133,13 +105,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
             imgClock = itemView.findViewById(R.id.imgClock);
             tvNameApp = itemView.findViewById(R.id.tv_nameApp);
         }
-
-    }
-
-    public void setArrayLock(ArrayList<String> locks) {
-        lockArrayList.clear();
-        lockArrayList.addAll(locks);
-        this.notifyDataSetChanged();
 
     }
 

@@ -1,13 +1,9 @@
 package com.example.applock.fragment;
-
-
-import static android.app.ProgressDialog.show;
-
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,14 +17,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
 
+import com.example.applock.MainActivity;
 import com.example.applock.service.LockService;
 import com.example.applock.Interface.ItemClickListenerLock;
 import com.example.applock.R;
 import com.example.applock.adapter.HomeAdapter;
-import com.example.applock.db.Lock;
+import com.example.applock.model.Lock;
 import com.example.applock.db.LockDatabase;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
@@ -40,11 +38,48 @@ public class HomeFragment extends Fragment {
     ItemClickListenerLock itemClickListenerLock;
     LockDatabase lockDatabase;
 
-    ArrayList<Lock> locks;
+    ArrayList<Lock> appSystem;
 
     LockDatabase database;
 
     Button btnOff;
+
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        appSystem = new ArrayList<>();
+
+        if (context instanceof MainActivity) {
+            MainActivity mainActivity = (MainActivity) context;
+            database = mainActivity.getDatabase();
+        }
+
+        // Kiểm tra xem cơ sở dữ liệu đã được khởi tạo hay chưa
+        if (database != null) {
+            Log.d("095348", "fasidfjsiafa");
+
+            List<Lock> locks = database.lockDAO().getListApps();
+            if (locks != null && !locks.isEmpty()) {
+                ArrayList<Lock> lockArrayList = new ArrayList<>();
+                // nếu db đã có table
+                appSystem.clear();
+                lockArrayList.addAll(database.lockDAO().getListApps());
+                appSystem.addAll(setApplications(lockArrayList));
+
+
+            } else {
+
+                // ban đầu người dùng lần đầu tiên cài apps
+                appSystem.addAll(getListAppSystem());
+                database.lockDAO().insertLocks(appSystem);
+
+            }
+        }
+
+
+    }
 
     @Nullable
     @Override
@@ -55,109 +90,110 @@ public class HomeFragment extends Fragment {
         btnOff = view.findViewById(R.id.btnOFF);
 
         infoArrayList = new ArrayList<>();
-        locks = new ArrayList<>();
-
-        database = Room.databaseBuilder(getActivity(), LockDatabase.class, "locks_database")
-                .allowMainThreadQueries()
-                .build();
-
-        // them tat ca item lock vao cho locks
-        locks.addAll(getListAppLock());
 
         Intent intent = new Intent(getContext(), LockService.class);
-
         getContext().startService(intent);
 
 
-        // send list adappter
-        ArrayList<String> strings = new ArrayList<>();
+//        itemClickListenerLock = new ItemClickListenerLock() {
+//
+//            @Override
+//            public void clickItemLock(Lock lock, boolean removeItemLock) {
+//                if (removeItemLock) {
+//                    Log.d("42344145", "43");
+//                    // xoa element app lock
+//                    database.lockDAO().removeAppLock(lock.getIdApp());
+//                    // gui lai list duoc updat cho service
+//                    locks.remove(lock);
+//                    Intent intent1 = new Intent(getContext(), LockService.class);
+//                    intent.putParcelableArrayListExtra("listLock", locks);
+//                    getContext().startService(intent);
+//                } else {
+//                    database.lockDAO().insert(lock);
+//                    locks.add(lock);
+//                    intent.putParcelableArrayListExtra("listLock", locks);
+//                    getContext().startService(intent);
+//                }
+//            }
+//        };
 
 
-
-        itemClickListenerLock = new ItemClickListenerLock() {
-
-            @Override
-            public void clickItemLock(Lock lock, boolean removeItemLock) {
-                if (removeItemLock) {
-                    Log.d("42344145", "43");
-                    // xoa element app lock
-                    database.lockDAO().removeAppLock(lock.getIdApp());
-                    // gui lai list duoc updat cho service
-                    locks.remove(lock);
-                    Intent intent1 = new Intent(getContext(), LockService.class);
-                    intent.putParcelableArrayListExtra("listLock", locks);
-                    getContext().startService(intent);
-                } else {
-                    database.lockDAO().insert(lock);
-                    locks.add(lock);
-                    intent.putParcelableArrayListExtra("listLock", locks);
-                    getContext().startService(intent);
-                }
-            }
-        };
-
-
-        homeAdapter = new HomeAdapter(getContext(), infoArrayList, itemClickListenerLock, locks);
+        homeAdapter = new HomeAdapter(getContext(), appSystem, database);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
 
         rcvHome.setLayoutManager(layoutManager);
         rcvHome.setAdapter(homeAdapter);
-
-        btnOff.setOnClickListener(v -> {
-            Intent intent1 = new Intent(getContext(), LockService.class);
-            getContext().stopService(intent1);
-        });
-
-
-        for (Lock s : locks) {
-            strings.add(s.getName());
-        }
-
-        homeAdapter.setArrayLock(strings);
         homeAdapter.notifyDataSetChanged();
 
-        getListAppSystem();
+//        btnOff.setOnClickListener(v -> {
+//            Intent intent1 = new Intent(getContext(), LockService.class);
+//            getContext().stopService(intent1);
+//        });
 
 
         return view;
     }
 
-    public boolean checkAccessibilityPermission() {
-        int accessEnabled = 0;
-        try {
-            accessEnabled = Settings.Secure.getInt(getContext().getContentResolver(), Settings.Secure.ACCESSIBILITY_ENABLED);
-        } catch (Settings.SettingNotFoundException e) {
-            e.printStackTrace();
-        }
-        if (accessEnabled == 0) {
 
-            Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-
-            return false;
-
-        } else {
-            return true;
-        }
-    }
-
-
-    private void getListAppSystem() {
+    // khoi tao list app he thong
+    private ArrayList<Lock> getListAppSystem() {
+        ArrayList<Lock> lockArrayList = new ArrayList<>();
         List<ApplicationInfo> installedApps = getContext().getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
-        int i = 0;
         ArrayList<ApplicationInfo> applicationInfos = new ArrayList<>();
 
         for (ApplicationInfo appInfo : installedApps) {
+
+
             if (getContext().getPackageManager().getLaunchIntentForPackage(appInfo.packageName) != null) {
-                applicationInfos.add(appInfo);
+//                Log.d("523453253",appInfo.packageName);
+                Lock lock = new Lock(0, false, appInfo.packageName, appInfo);
+                lockArrayList.add(lock);
             }
         }
-        infoArrayList.addAll(applicationInfos);
-        homeAdapter.notifyDataSetChanged();
+        return lockArrayList;
 
     }
+
+    private ArrayList<Lock> setApplications(ArrayList<Lock> locks) {
+        HashMap<String, ApplicationInfo> packageInfoMap = new HashMap<>();
+
+        // Lưu thông tin ứng dụng vào HashMap với key là packageName
+        for (Lock lock : locks) {
+            packageInfoMap.put(lock.getPackageApp(), null);
+        }
+
+        // Lấy thông tin của tất cả ứng dụng cài đặt trên thiết bị
+        List<ApplicationInfo> installedApps = getContext().getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA);
+
+        // Kiểm tra và cập nhật thông tin ứng dụng
+        for (ApplicationInfo appInfo : installedApps) {
+            if (getContext().getPackageManager().getLaunchIntentForPackage(appInfo.packageName) != null) {
+                // Nếu ứng dụng đã được cài đặt và có thể mở được
+                String packageName = appInfo.packageName;
+                if (packageInfoMap.containsKey(packageName)) {
+                    // Cập nhật thông tin ứng dụng vào HashMap
+                    packageInfoMap.put(packageName, appInfo);
+                }
+            }
+        }
+
+        // Cập nhật thông tin ứng dụng vào các đối tượng Lock
+        for (Lock lock : locks) {
+            String packageName = lock.getPackageApp();
+            if (packageInfoMap.containsKey(packageName)) {
+                // Lấy thông tin ứng dụng từ HashMap và cập nhật vào đối tượng Lock
+                ApplicationInfo applicationInfo = packageInfoMap.get(packageName);
+                lock.setApplicationInfo(applicationInfo);
+            }
+        }
+
+        return locks;
+    }
+
+
+    // kiểm tra lần đầu tiên nếu chưa có database thì thêm vào
+    // them tat ca list app vao db
 
     private ArrayList<Lock> getListAppLock() {
         ArrayList<Lock> lockArrayList = new ArrayList<>();

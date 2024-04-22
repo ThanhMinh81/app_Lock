@@ -3,9 +3,11 @@ package com.example.applock.service;
 import static com.example.applock.MyApplication.CHAINNEL_ID;
 
 import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
@@ -26,6 +28,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -47,8 +50,9 @@ import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
 import com.example.applock.Broadcast;
+import com.example.applock.OverlayActivity;
 import com.example.applock.R;
-import com.example.applock.db.Lock;
+import com.example.applock.model.Lock;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.fragment.HomeFragment;
 
@@ -91,6 +95,7 @@ public class LockService extends Service {
     boolean serviceRunning = true;
 
 
+
     @Override
     public void onCreate() {
 
@@ -105,9 +110,9 @@ public class LockService extends Service {
 
         locks.addAll(database.lockDAO().getListApps());
 
-        for (Lock lock : locks) {
-            names.add(lock.getName());
-        }
+//        for (Lock lock : locks) {
+//            names.add(lock.getName());
+//        }
 
         super.onCreate();
     }
@@ -128,16 +133,16 @@ public class LockService extends Service {
                     locks.addAll(lockArrayList);
                     names.clear();
 
-                    for (Lock lock : locks) {
-                        names.add(lock.getName());
-                    }
+//                    for (Lock lock : locks) {
+//                        names.add(lock.getName());
+//                    }
 
                 }
             }
         }
 
         for (Lock lock : locks) {
-            Log.d("fsafas", lock.getName() + " ");
+//            Log.d("fsafas", lock.getName() + " ");
         }
 
         Intent intent1 = new Intent(this, HomeFragment.class);
@@ -156,13 +161,48 @@ public class LockService extends Service {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                checkRunningApps();
+                lockApp();
             }
         });
         thread.start();
 
         return START_STICKY;
 
+    }
+
+
+
+    private void lockApp()
+    {
+        while (true)
+        {
+            long endTime = System.currentTimeMillis();
+            long beginTime = endTime - 10000;
+            String result = "";
+            UsageEvents.Event event = new UsageEvents.Event();
+            UsageStatsManager sUsageStatsManager = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
+            UsageEvents usageEvents = sUsageStatsManager.queryEvents(beginTime, endTime);
+            while (usageEvents.hasNextEvent()) {
+                usageEvents.getNextEvent(event);
+                if (event.getEventType() == UsageEvents.Event.MOVE_TO_FOREGROUND) {
+                    result = event.getPackageName();
+                }
+            }
+
+            if (database.lockDAO().isPackageLocked(result) != 0)
+            {
+                Intent intent = new Intent(this, OverlayActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+
+//            if (result.equals("com.google.android.youtube") || result.equals("com.google.android.gm"))
+//            {
+//                Intent intent = new Intent(this, OverlayActivity.class);
+//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                startActivity(intent);
+//            }
+        }
     }
 
 
@@ -573,4 +613,19 @@ public class LockService extends Service {
     }
 
 
+    @Override
+    public void onTaskRemoved(Intent rootIntent){
+        Log.d("534fsdfshh","75756");
+        Intent restartServiceIntent = new Intent(getApplicationContext(), this.getClass());
+        restartServiceIntent.setPackage(getPackageName());
+
+        PendingIntent restartServicePendingIntent = PendingIntent.getService(getApplicationContext(), 1, restartServiceIntent, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager alarmService = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmService.set(
+                AlarmManager.ELAPSED_REALTIME,
+                SystemClock.elapsedRealtime() + 1000,
+                restartServicePendingIntent);
+
+        super.onTaskRemoved(rootIntent);
+    }
 }
