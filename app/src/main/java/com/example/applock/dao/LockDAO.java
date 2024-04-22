@@ -17,12 +17,13 @@ public interface LockDAO {
     @Query("DELETE FROM lockApps WHERE idApp = :id")
     void removeAppLock(int id);
 
-
     @Update
     int updateLock(Lock lock);
 
     @Query("SELECT COUNT(*) FROM lockApps WHERE packageApp = :packageName AND stateLock = 1")
     int isPackageLocked(String packageName);
 
+    @Query("SELECT * FROM lockApps WHERE packageApp = :packageName LIMIT 1")
+    Lock getLockByPackageName(String packageName);
 
 }

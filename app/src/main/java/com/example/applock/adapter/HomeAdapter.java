@@ -49,14 +49,16 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
         Lock lock = locks.get(position);
         ApplicationInfo applicationInfo = lock.getApplicationInfo();
 
-        holder.tvNameApp.setText(applicationInfo.loadLabel(context.getPackageManager()));
-        holder.imgIcon.setImageDrawable(applicationInfo.loadIcon(context.getPackageManager()));
+        if (applicationInfo != null)
+        {
+            holder.tvNameApp.setText(applicationInfo.loadLabel(context.getPackageManager()));
+            holder.imgIcon.setImageDrawable(applicationInfo.loadIcon(context.getPackageManager()));
+        }
 
         if (lock.isStateLock()) {
             holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable._669338_lock_ic_icon, null));
         }else {
             holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_lock_circle, null));
-
         }
 
         holder.imgClock.setOnClickListener(v -> {

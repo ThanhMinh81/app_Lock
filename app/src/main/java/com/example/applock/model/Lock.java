@@ -10,16 +10,16 @@ import androidx.room.Ignore;
 import androidx.room.PrimaryKey;
 
 @Entity(tableName = "lockApps")
-public class Lock  implements Parcelable {
+public class Lock implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private int idApp;
 
 
-    private boolean stateLock ;
+    private boolean stateLock;
 
-    private String packageApp ;
+    private String packageApp;
     @Ignore
-    private ApplicationInfo applicationInfo ;
+    private ApplicationInfo applicationInfo;
 
 
     public Lock() {

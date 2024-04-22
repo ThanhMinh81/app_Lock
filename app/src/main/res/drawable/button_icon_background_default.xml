@@ -7,6 +7,7 @@
 
     <!-- Icon -->
     <item
+
         android:drawable="@drawable/ic_clear"
         android:gravity="center" />
 
