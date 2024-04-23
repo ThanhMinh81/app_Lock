@@ -107,8 +107,8 @@ public class LockService extends Service {
 
             Notification notification1 = new NotificationCompat
                     .Builder(this, CHAINNEL_ID)
-                    .setContentTitle("Title notification service")
-                    .setContentText("Applock")
+                    .setContentTitle("AppLock")
+                    .setContentText("Protecting your apps")
                     .setSmallIcon(R.drawable.ic_launcher_background)
                     .setContentIntent(pendingIntent).build();
 

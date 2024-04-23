@@ -10,12 +10,11 @@
     android:paddingTop="10dp">
 
     <TextView
+        android:text="Create pin"
         android:id="@+id/tvTitleDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:gravity="center"
-        android:text="Create pin"
         android:textColor="#888888"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -23,190 +22,193 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
     <TextView
-        android:textColor="#3498db"
+        android:id="@+id/tvPassword"
         android:inputType="numberPassword"
-        android:gravity="center"
-        android:text="329384"
-        android:textSize="22sp"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:gravity="center"
+
+        android:textColor="#0097e6"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
     <LinearLayout
-        android:orientation="vertical"
+        android:layout_margin="10dp"
         android:layout_width="330dp"
-        android:layout_height="500dp"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="15dp"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <TableLayout
             android:id="@+id/tableLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
-            <TableRow android:layout_marginTop="5dp">
+            <TableRow>
 
                 <Button
                     android:id="@+id/btn1"
                     style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_gravity="center"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="5dp"
                     android:layout_weight="1"
-                    android:padding="2dp"
+                    android:padding="6dp"
                     android:text="1"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/btn2"
                     style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_gravity="center"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
-                    android:padding="25dp"
+                    android:padding="6dp"
                     android:text="2"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/btn3"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
-                    android:padding="25dp"
+                    android:padding="6dp"
                     android:text="3"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
             </TableRow>
 
-            <TableRow
-                android:layout_marginTop="20dp">
+            <TableRow android:layout_marginTop="10dp">
 
                 <Button
                     android:id="@+id/btn4"
                     style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_gravity="center"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_weight="1"
                     android:gravity="center"
-                    android:padding="25dp"
+                    android:layout_weight="1"
+                    android:padding="6dp"
                     android:text="4"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/btn5"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_gravity="center"
                     android:layout_weight="1"
+                    android:padding="6dp"
                     android:gravity="center"
-                    android:padding="25dp"
                     android:text="5"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/btn6"
-
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:padding="25dp"
                     android:text="6"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
             </TableRow>
 
-            <TableRow android:layout_marginTop="15dp">
+            <TableRow android:layout_marginTop="10dp">
 
                 <Button
                     android:id="@+id/btn7"
                     style="@style/Widget.AppCompat.Button.Borderless"
                     android:layout_gravity="center"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
+                    android:padding="6dp"
                     android:gravity="center"
-                    android:padding="25dp"
                     android:text="7"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/btn8"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:padding="25dp"
                     android:text="8"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:padding="6dp"
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
                 <Button
                     android:id="@+id/btn9"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:padding="25dp"
+                    android:padding="6dp"
                     android:text="9"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
-
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
             </TableRow>
 
-            <TableRow android:layout_marginTop="15dp">
+            <TableRow android:layout_marginTop="10dp">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCheck"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="4dp"
                     android:layout_weight="1"
-                    android:enabled="false"
                     android:gravity="center"
-                    android:padding="25dp"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:padding="6dp"
+                    android:textSize="20sp"
+                    app:icon="@drawable/ic_check"
+                    app:iconTint="@color/black"
+                    app:iconGravity="textStart"
+                    app:iconSize="23sp" />
 
                 <Button
                     android:id="@+id/btn0"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="4dp"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:padding="25dp"
+                    android:padding="6dp"
                     android:text="0"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:textColor="@color/black"
+                    android:textSize="20sp" />
 
-                <Button
-                    android:id="@+id/btn_clear"
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnClear"
                     style="@style/Widget.AppCompat.Button.Borderless"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginRight="10dp"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="4dp"
                     android:layout_weight="1"
-                    android:background="@drawable/button_icon_background_selector"
                     android:gravity="center"
-                    android:padding="25dp"
-                    android:textColor="@color/white"
-                    android:textSize="28sp" />
+                    android:padding="6dp"
+                    android:textSize="20sp"
+                    app:icon="@drawable/ic_clear"
+                    app:iconTint="@color/black"
+                    app:iconGravity="textStart"
+                    app:iconSize="23sp" />
 
             </TableRow>
 
         </TableLayout>
+
+        <ImageView
+            android:id="@+id/state_true_pattern"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="15dp"
+            android:src="@drawable/check_true" />
+
+
+
 
     </LinearLayout>
 
@@ -215,11 +217,10 @@
         android:id="@+id/tvCancel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="15dp"
-        android:layout_marginTop="25dp"
+        android:layout_margin="10dp"
         android:background="@drawable/bg_color_button"
         android:gravity="center"
-        android:padding="10dp"
+        android:padding="7dp"
         android:text="Cancel"
         android:textColor="@color/white"
         android:textSize="17sp" />
