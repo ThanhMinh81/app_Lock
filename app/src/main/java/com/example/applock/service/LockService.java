@@ -38,6 +38,7 @@ import androidx.room.Room;
 
 import com.example.applock.OverlayActivity;
 import com.example.applock.R;
+import com.example.applock.ScreenReceiver;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.fragment.HomeFragment;
 import com.example.applock.model.Lock;
@@ -49,6 +50,8 @@ import java.util.Objects;
 public class LockService extends Service {
 
     ArrayList<Lock> locks = new ArrayList<>();
+
+    private BroadcastReceiver screenReceiver = new ScreenReceiver();
 
     private Handler mHandler;
     LockDatabase database;
@@ -71,6 +74,9 @@ public class LockService extends Service {
                 currentLock = message;
             }
         };
+
+        registerReceiver(screenReceiver, new IntentFilter(Intent.ACTION_SCREEN_ON));
+        registerReceiver(screenReceiver, new IntentFilter(Intent.ACTION_SCREEN_OFF));
 
         // Đăng ký BroadcastReceiver với IntentFilter để lắng nghe broadcast có action "ACTION_SEND_MESSAGE"
         IntentFilter filter = new IntentFilter("ACTION_LOCK_APP");
@@ -290,6 +296,7 @@ public class LockService extends Service {
     public void onDestroy() {
 //        // Hủy đăng ký BroadcastReceiver khi Service bị hủy
         unregisterReceiver(receiver);
+        unregisterReceiver(screenReceiver);
         super.onDestroy();
     }
 
@@ -302,6 +309,9 @@ public class LockService extends Service {
         }
 
     }
+
+
+
 
 
 }

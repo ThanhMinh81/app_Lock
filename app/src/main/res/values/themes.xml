@@ -15,6 +15,18 @@
     </style>
 
 
+    <style name="MyRadioButton" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">#7f8c8d</item>
+        <item name="colorControlActivated">#2980b9</item>
+    </style>
+
+
+    <style name="MySeekBar" parent="Widget.AppCompat.SeekBar">
+        <item name="android:progressBackgroundTint">#95a5a6</item>
+        <item name="android:progressTint">#2980b9</item>
+        <item name="android:thumbTint">#2980b9</item>
+    </style>
+
     <style name="WrapContentDialog" parent="Theme.AppCompat.Light.Dialog">
         <item name="windowMinWidthMajor">0%</item>
         <item name="windowMinWidthMinor">0%</item>

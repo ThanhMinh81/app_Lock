@@ -5,10 +5,13 @@ import static android.content.Context.MODE_PRIVATE;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,7 +22,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RelativeLayout;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -49,15 +54,20 @@ public class SettingFragment extends Fragment {
     private SharedPreferences createPassword;
     private TextView tvPin;
 
-    private TextView tvTitleDialog, tvCancel ;
+    private TextView tvTitleDialog, tvCancel;
     private MaterialButton btnCheck, btnClear;
 
-   private Button btn1 , btn2 , btn3 , btn4 , btn5, btn6 ,btn7 , btn8 ,btn9 ,btn0 ;
+    private Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
 
-     private  View dialogPattern ;
+    private View dialogPattern;
+
+    int count = 0;
 
 
     ImageView imgChangeSuccess;
+    private TableLayout tableLayoutChangePin;
+
+    LinearLayout layoutRelockApp ;
 
 
     public SettingFragment() {
@@ -73,6 +83,7 @@ public class SettingFragment extends Fragment {
         layoutChangePattern = view.findViewById(R.id.layout_change_pattern);
 
         layoutChangePin = view.findViewById(R.id.layout_change_pin);
+        layoutRelockApp = view.findViewById(R.id.layout_relockApp);
 
 
         layoutChangePattern.setOnClickListener(v -> {
@@ -82,11 +93,36 @@ public class SettingFragment extends Fragment {
         layoutChangePin.setOnClickListener(v -> {
             showDialogChangePin();
         });
+        layoutRelockApp.setOnClickListener(view -> {
+            showDialogRelockApp();
+        });
 
 
         return view;
     }
 
+    private void showDialogRelockApp() {
+        RadioButton radioButton ;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.WrapContentDialog);
+        LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
+        dialogPattern = layoutInflater.inflate(R.layout.relock_dialog_layout, null);
+        radioButton = dialogPattern.findViewById(R.id.radio_a);
+
+        builder.setView(dialogPattern);
+        AlertDialog dialog = builder.create();
+        Window window = dialog.getWindow();
+        WindowManager.LayoutParams params = window.getAttributes();
+        params.gravity = Gravity.CENTER;
+        params.width = WindowManager.LayoutParams.MATCH_PARENT;
+        params.height = WindowManager.LayoutParams.MATCH_PARENT ;
+
+        window.setAttributes(params);
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+
+        dialog.show();
+
+    }
 
 
 
@@ -94,12 +130,12 @@ public class SettingFragment extends Fragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.WrapContentDialog);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
-          dialogPattern = layoutInflater.inflate(R.layout.pin_dialog_layout, null);
+        dialogPattern = layoutInflater.inflate(R.layout.pin_dialog_layout, null);
 
-         initViewDialog();
-
+        initViewDialog();
 
         imgChangeSuccess = dialogPattern.findViewById(R.id.state_true_pattern);
+        tableLayoutChangePin = dialogPattern.findViewById(R.id.tableLayout);
 
         createPassword = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
 
@@ -124,135 +160,107 @@ public class SettingFragment extends Fragment {
         eventClickView();
 
 
-
-
-
-
-
-
     }
 
     private void eventClickView() {
 
+
         btnCheck.setOnClickListener(v -> {
 
-            changePin = tvPin.getText().toString();
 
-            if(changePin.length() < 2)
-            {
+            if (tvPin.getText().toString().length() < 2) {
+
+                tvTitleDialog.setText("Pin Length is less then 2 , Enter Pin Again");
+
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        tvTitleDialog.setText("Pin Length is less then 2 , Enter Pin Again");
+                        tvTitleDialog.setText("Create Pin");
+                        tvPin.setText("");
+
                     }
-                }, 200);
-
-                tvTitleDialog.setText("Create Pin");
+                }, 1000);
 
 
-            }else {
-                String pinConfirm = tvPin.getText().toString();
+            } else {
+                if (count == 0) {
+                    // nếu lớn hơn 2 thì cho bến string tạm đó bằng pass
+                    changePin = tvPin.getText().toString();
+                    tvPin.setText("");
+                    tvTitleDialog.setText("Confirm pin");
+                    count++;
+                    return;
+                }
+                if (count == 1) {
+                    if (changePin.equals(tvPin.getText().toString())) {
+                        // thay dodoir mat khau thanh cong
 
-                tvTitleDialog.setText("Confirm pin");
+                        tvTitleDialog.setText("Pin changed");
+                        imgChangeSuccess.setVisibility(View.VISIBLE);
+                        tableLayoutChangePin.setVisibility(View.GONE);
+                        tvCancel.setText("OK");
 
-                if (pinConfirm.equals(changePin)) {
 
-                    tvTitleDialog.setText("Pin changed");
-                    imgChangeSuccess.setVisibility(View.VISIBLE);
-                    tvCancel.setText("OK");
+                        SharedPreferences.Editor editor = createPassword.edit();
 
-                    SharedPreferences.Editor editor = createPassword.edit();
+                        editor.putString("password_pin", tvPin.getText().toString());
 
-                    editor.putString("password_pin", pinConfirm);
+                        editor.apply();
 
-                    editor.apply();
+                        changePin = "";
+                        tvPin.setText("");
+                        count = 0;
 
-                    changePin = "";
+                    } else {
+                        // thay doi mat khau that bai
 
-                } else {
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                tvTitleDialog.setText("Create pin");
+                            }
+                        }, 1000);
+                        changePin = "";
+                        tvPin.setText("");
+                        tvTitleDialog.setText("Pin does not match , Enter Pin Again");
+                        count = 0;
 
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            tvTitleDialog.setText("Pin does not match , Enter Pin Again");
-                        }
-                    }, 200);
-                    changePin = "";
-                    tvTitleDialog.setText("Create pin");
 
+                    }
                 }
 
 
             }
 
-
-//            if (changePin.isEmpty()) {
-//                if (tvPin.length() < 2) {
-//                    Handler handler = new Handler();
-//                    handler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//
-//                            tvTitleDialog.setText("Pin Length is less then 2 , Enter Pin Again");
-//
-//                        }
-//
-//                    }, 200);
-//
-//                    tvTitleDialog.setText("Create Pin");
-//
-//                } else {
-//                    changePin = tvPin.getText().toString();
-//                    tvTitleDialog.setText("Confirm pin");
-//                }
-//            } else {
-//                String pinConfirm = tvPin.getText().toString();
-//
-//                if (pinConfirm.equals(changePin)) {
-//
-//                    tvTitleDialog.setText("Pin changed");
-//                    imgChangeSuccess.setVisibility(View.VISIBLE);
-//                    tvCancel.setText("OK");
-//
-//                    SharedPreferences.Editor editor = createPassword.edit();
-//
-//                    editor.putString("password_pin", pinConfirm);
-//
-//                    editor.apply();
-//
-//                    changePin = "";
-//
-//                } else {
-//
-//                    Handler handler = new Handler();
-//                    handler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            tvTitleDialog.setText("Pin does not match , Enter Pin Again");
-//                        }
-//                    }, 200);
-//                    changePin = "";
-//                    tvTitleDialog.setText("Create pin");
-//
-//                }
-//
-//            }
-
         });
 
-        btn1.setOnClickListener(v -> {onClickChangePin(v);});
-        btn2.setOnClickListener(v -> {onClickChangePin(v);});
+        btn1.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn2.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
         btn3.setOnClickListener(v -> onClickChangePin(v));
-        btn4.setOnClickListener(v -> {onClickChangePin(v);});
-        btn5.setOnClickListener(v -> {onClickChangePin(v);});
+        btn4.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn5.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
         btn6.setOnClickListener(v -> onClickChangePin(v));
-        btn7.setOnClickListener(v -> {onClickChangePin(v);});
-        btn8.setOnClickListener(v -> {onClickChangePin(v);});
+        btn7.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn8.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
         btn9.setOnClickListener(v -> onClickChangePin(v));
         btn0.setOnClickListener(v -> onClickChangePin(v));
-        btnClear.setOnClickListener(v -> {onClearPinPassword(v);});
+        btnClear.setOnClickListener(v -> {
+            onClearPinPassword(v);
+        });
 
         btnClear.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -284,7 +292,7 @@ public class SettingFragment extends Fragment {
     }
 
 
-    public  void onClickChangePin(View view) {
+    public void onClickChangePin(View view) {
         Button button = (Button) view;
 //        Log.d("fsdfas",button.getText().toString());
         String currentText = tvPin.getText().toString();
@@ -371,6 +379,7 @@ public class SettingFragment extends Fragment {
                             public void run() {
                                 mPatternLockView.clearPattern();
                                 tvTitleDialog.setText("Create pattern");
+
                                 changePattern = "";
                             }
                         }, 400);
