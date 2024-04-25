@@ -2,6 +2,7 @@ package com.example.applock.fragment;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -20,10 +21,14 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
+import android.widget.SeekBar;
 import android.widget.TableLayout;
 import android.widget.TextView;
 
@@ -44,35 +49,37 @@ import org.w3c.dom.Text;
 import java.util.List;
 
 public class SettingFragment extends Fragment {
-
     View view;
     LinearLayout layoutChangePattern;
     String changePattern = "";
 
     RelativeLayout layoutChangePin;
     private String changePin = "";
-    private SharedPreferences createPassword;
+
     private TextView tvPin;
 
-    private TextView tvTitleDialog, tvCancel;
+    private TextView tvTitleDialog, tvCancel, tvCurrentModeLock;
     private MaterialButton btnCheck, btnClear;
 
-    private Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
-
+    Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
     private View dialogPattern;
-
     int count = 0;
-
-
     ImageView imgChangeSuccess;
     private TableLayout tableLayoutChangePin;
+    LinearLayout layoutRelockApp;
 
-    LinearLayout layoutRelockApp ;
+    // hiển thị thời gian khóa app
+    String minuteLock = "";
 
+    // hien thi text mode hien tai
+    String lockModeCurrent = "";
+
+    CheckBox cbUnlockFinger ;
+
+    SharedPreferences modeLockSpf ;
 
     public SettingFragment() {
     }
-
 
     @Nullable
     @Override
@@ -84,7 +91,34 @@ public class SettingFragment extends Fragment {
 
         layoutChangePin = view.findViewById(R.id.layout_change_pin);
         layoutRelockApp = view.findViewById(R.id.layout_relockApp);
+        tvCurrentModeLock = view.findViewById(R.id.tvCurrentModeLock);
+        cbUnlockFinger = view.findViewById(R.id.cbUnlockFingerPassword);
 
+          modeLockSpf = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
+        lockModeCurrent = modeLockSpf.getString("lock_mode", "immediately");
+
+        if (lockModeCurrent.equals("immediately")) {
+            tvCurrentModeLock.setText("Immediately");
+        } else if (lockModeCurrent.equals("screen_off")) {
+            tvCurrentModeLock.setText("After screen off");
+        } else {
+            tvCurrentModeLock.setText(lockModeCurrent + " minute");
+            minuteLock = lockModeCurrent ;
+        }
+
+
+        cbUnlockFinger.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                if(isChecked)
+                {
+                    SharedPreferences.Editor editFinger  = modeLockSpf.edit();
+                    editFinger.putString("finger_print","yes");
+                    editFinger.apply();
+                }else {
+                    SharedPreferences.Editor editFinger  = modeLockSpf.edit();
+                    editFinger.putString("finger_print","no");
+                    editFinger.apply();
+                }
+        });
 
         layoutChangePattern.setOnClickListener(v -> {
             showDialogChangePattern();
@@ -102,12 +136,36 @@ public class SettingFragment extends Fragment {
     }
 
     private void showDialogRelockApp() {
-        RadioButton radioButton ;
+        RadioButton rbImedia, rbScreenOff, rbAfterMinute;
+        TextView tvCancel, tvOk;
+        SeekBar seekBarMinute;
+        TextView tvMinute;
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.WrapContentDialog);
+
+        SharedPreferences modeLock = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
+
+        SharedPreferences.Editor editor = modeLock.edit();
+
+        // mac dinh la immediately
+        lockModeCurrent = modeLock.getString("lock_mode", "immediately");
+
+        if (!lockModeCurrent.equals("immediately") && !lockModeCurrent.equals("screen_off"))
+        {
+            minuteLock = lockModeCurrent ;
+        }else {
+            minuteLock = String.valueOf(1);
+        }
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.WrapContentDialog);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
         dialogPattern = layoutInflater.inflate(R.layout.relock_dialog_layout, null);
-        radioButton = dialogPattern.findViewById(R.id.radio_a);
+        rbImedia = dialogPattern.findViewById(R.id.rb_immedia);
+        rbScreenOff = dialogPattern.findViewById(R.id.rbScreenOff);
+        rbAfterMinute = dialogPattern.findViewById(R.id.rbAfterMinute);
+        seekBarMinute = dialogPattern.findViewById(R.id.seekBarMinute);
+        tvMinute = dialogPattern.findViewById(R.id.idMinute);
+        tvCancel = dialogPattern.findViewById(R.id.tvCancel);
+        tvOk = dialogPattern.findViewById(R.id.tvOk);
 
         builder.setView(dialogPattern);
         AlertDialog dialog = builder.create();
@@ -115,15 +173,125 @@ public class SettingFragment extends Fragment {
         WindowManager.LayoutParams params = window.getAttributes();
         params.gravity = Gravity.CENTER;
         params.width = WindowManager.LayoutParams.MATCH_PARENT;
-        params.height = WindowManager.LayoutParams.MATCH_PARENT ;
+        params.height = WindowManager.LayoutParams.MATCH_PARENT;
 
         window.setAttributes(params);
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
 
         dialog.show();
 
-    }
+        tvCancel.setOnClickListener(v -> {
+            dialog.dismiss();
+        });
 
+        if (lockModeCurrent.equals("immediately")) {
+            rbImedia.setChecked(true);
+            rbScreenOff.setChecked(false);
+            rbAfterMinute.setChecked(false);
+        } else if (lockModeCurrent.equals("screen_off")) {
+            rbImedia.setChecked(false);
+            rbScreenOff.setChecked(true);
+            rbAfterMinute.setChecked(false);
+        } else {
+            seekBarMinute.setProgress(Integer.valueOf(lockModeCurrent));
+            tvMinute.setText(lockModeCurrent);
+            rbImedia.setChecked(false);
+            rbScreenOff.setChecked(false);
+            rbAfterMinute.setChecked(true);
+        }
+
+        View.OnClickListener onClickListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                RadioButton clickedRadioButton = (RadioButton) v;
+
+                Boolean checked = clickedRadioButton.isChecked();
+
+                if (checked) {
+                    if (clickedRadioButton.getId() == R.id.rb_immedia) {
+                        rbScreenOff.setChecked(false);
+                        rbAfterMinute.setChecked(false);
+                    } else if (clickedRadioButton.getId() == R.id.rbAfterMinute) {
+
+
+                        rbImedia.setChecked(false);
+                        rbScreenOff.setChecked(false);
+
+                    } else if (clickedRadioButton.getId() == R.id.rbScreenOff) {
+                        rbImedia.setChecked(false);
+                        rbAfterMinute.setChecked(false);
+                    }
+                }
+
+            }
+        };
+
+
+        // onClickButton
+
+        rbImedia.setOnClickListener(onClickListener);
+        rbScreenOff.setOnClickListener(onClickListener);
+        rbAfterMinute.setOnClickListener(onClickListener);
+
+        seekBarMinute.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+
+                rbImedia.setChecked(false);
+                rbScreenOff.setChecked(false);
+                rbAfterMinute.setChecked(true);
+
+                Log.d("5903709423fs", progress + " ");
+                tvMinute.setText(String.valueOf(progress));
+                minuteLock = String.valueOf(progress);
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+
+        tvOk.setOnClickListener(v -> {
+
+            if (rbImedia.isChecked()) {
+
+                tvCurrentModeLock.setText("Immediately");
+
+                editor.putString("lock_mode", "immediately");
+
+                editor.apply();
+            } else if (rbScreenOff.isChecked()) {
+                tvCurrentModeLock.setText("After screen off");
+                editor.putString("lock_mode", "screen_off");
+
+                editor.apply();
+            } else if (rbAfterMinute.isChecked()) {
+
+                Log.d("23434544545", minuteLock + " ");
+
+                editor.putString("lock_mode", minuteLock);
+                tvCurrentModeLock.setText(String.valueOf(minuteLock) + " minute");
+
+                editor.apply();
+                minuteLock = "";
+
+            }
+
+            dialog.dismiss();
+
+        });
+
+
+    }
 
 
     private void showDialogChangePin() {
@@ -137,7 +305,6 @@ public class SettingFragment extends Fragment {
         imgChangeSuccess = dialogPattern.findViewById(R.id.state_true_pattern);
         tableLayoutChangePin = dialogPattern.findViewById(R.id.tableLayout);
 
-        createPassword = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
 
         imgChangeSuccess.setVisibility(View.GONE);
 
@@ -201,6 +368,7 @@ public class SettingFragment extends Fragment {
                         tableLayoutChangePin.setVisibility(View.GONE);
                         tvCancel.setText("OK");
 
+                        SharedPreferences createPassword = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
 
                         SharedPreferences.Editor editor = createPassword.edit();
 
@@ -345,12 +513,13 @@ public class SettingFragment extends Fragment {
             public void onComplete(List<PatternLockView.Dot> pattern) {
 
 //                mPatternLockView.clearPattern();
-                if (!changePattern.isEmpty()) {
+                if (changePattern.isEmpty()) {
+
                     tvTitleDialog.setText("Confirm pattern");
                     changePattern = PatternLockUtils.patternToString(mPatternLockView, pattern);
                     mPatternLockView.clearPattern();
-                } else {
 
+                } else {
 
                     if (changePattern.equals(PatternLockUtils.patternToString(mPatternLockView, pattern))) {
                         tvTitleDialog.setText("Pattern Changed");
@@ -359,6 +528,7 @@ public class SettingFragment extends Fragment {
                         mPatternLockView.setVisibility(View.GONE);
                         img_state_pattern.setVisibility(View.VISIBLE);
 
+                        SharedPreferences createPassword = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
 
                         SharedPreferences.Editor editor = createPassword.edit();
 

@@ -1,7 +1,12 @@
 package com.example.applock;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
 import android.app.AppOpsManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -12,6 +17,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -30,8 +36,10 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.biometric.BiometricPrompt;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.FragmentStatePagerAdapter;
@@ -47,30 +55,26 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 
+import java.util.concurrent.Executors;
+
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private static final String CHANNEL_DEFAULT_IMPORTANCE = "Service";
     private static final int REQUEST_OVERLAY_PERMISSION = 1111 ;
-    ListView listView;
-    TextView text;
-    private String TAG = "MainActivity";
     private static final int REQUEST_USAGE_STATS_PERMISSION = 1;
 
-    private static final int REQUEST_SYSTEM_ALERT_WINDOW = 1001;
-    private static final int NOTIFICATION_ID = 1;
-    Button btnStop;
     TabLayout mTabLayout;
     ViewPager mViewPager;
     Spinner spinnerSelected;
     Toolbar materialToolbar;
     SearchView searchView;
-    private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle actionBarDrawerToggle;
+     DrawerLayout drawerLayout;
+     ActionBarDrawerToggle actionBarDrawerToggle;
 
     SharedPreferences pref;
 
     LockDatabase database;
 
+    @SuppressLint("ScheduleExactAlarm")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,8 +95,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-
-
         try {
             database = Room.databaseBuilder(this, LockDatabase.class, "locks_database")
                     .allowMainThreadQueries()
@@ -102,6 +104,33 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             e.printStackTrace();
         }
 
+
+//        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
+//                .setTitle("Xác thực vân tay")
+//                .setNegativeButtonText("Hủy")
+//                .build();
+//
+//        BiometricPrompt biometricPrompt = new BiometricPrompt(this, Executors.newSingleThreadExecutor(), new BiometricPrompt.AuthenticationCallback() {
+//            @Override
+//            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+//                // Xác thực thành công
+//                Log.d("rưqeyqrfasf","iofdsahfa");
+//                super.onAuthenticationSucceeded(result);
+//            }
+//
+//            @Override
+//            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+//                // Xác thực thất bại
+//                Log.d("rưqeyqrfasf","thattbaaiaiai");
+//
+//                super.onAuthenticationError(errorCode, errString);
+//            }
+//        });
+//
+//        biometricPrompt.authenticate(promptInfo);
+
+
+        //========================//
 
         // check quyen truy cap vao ung dung he thong
         requestUsageStatsPermission();

@@ -5,17 +5,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PixelFormat;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PersistableBundle;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TableLayout;
@@ -24,7 +21,6 @@ import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.compose.ui.graphics.Canvas;
 import androidx.room.Room;
 
 import com.andrognito.patternlockview.PatternLockView;
@@ -34,6 +30,7 @@ import com.example.applock.db.LockDatabase;
 import com.example.applock.model.Lock;
 import com.google.android.material.button.MaterialButton;
 
+import java.util.Calendar;
 import java.util.List;
 
 public class OverlayActivity extends AppCompatActivity {
@@ -46,18 +43,20 @@ public class OverlayActivity extends AppCompatActivity {
 
     ImageView imgIconApp;
     String packageApp;
-
-    private SharedPreferences.Editor editor;
-
     LockDatabase database;
 
     boolean patternMode = true;
 
     TextView tvPassword;
     Lock lock;
-    private String password;
+    private String passwordPattern;
+    private String passwordPin ;
 
     MaterialButton btnClear ;
+
+    private String modeLock ;
+
+    private Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -73,6 +72,8 @@ public class OverlayActivity extends AppCompatActivity {
 
         // Nhận mảng byte từ Intent
         byte[] byteArray = getIntent().getByteArrayExtra("picture");
+
+        modeLock = getIntent().getStringExtra("mode_lock");
 
 
         database = Room.databaseBuilder(getApplicationContext(), LockDatabase.class, "locks_database")
@@ -90,18 +91,79 @@ public class OverlayActivity extends AppCompatActivity {
 
             Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
 
-           imgIconApp.setImageBitmap(bitmap);
+            imgIconApp.setImageBitmap(bitmap);
+
         }
 
 
         // send bitmap
 
         SharedPreferences sharedPreferences = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-          password = sharedPreferences.getString("password_pattern", "null");
+        passwordPattern = sharedPreferences.getString("password_pattern", "null");
+        passwordPin = sharedPreferences.getString("password_pin","null");
+
+        if(!passwordPin.equals("null")) {
+
+            InputFilter[] filterArray = new InputFilter[1];
+            filterArray[0] = new InputFilter.LengthFilter(passwordPin.length());
+            tvPassword.setFilters(filterArray);
+
+        }
+
+        tvPassword.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+                Log.d("|0909fsdf",modeLock);
+
+                if(s.length() == passwordPin.length())
+                {
+                    if(s.toString().equals(passwordPin))
+                    {
+                        Intent intent = new Intent("ACTION_LOCK_APP");
+                        intent.putExtra("message", packageApp);
+                        sendBroadcast(intent);
+
+                        if (lock != null) {
+
+                            if(modeLock.equals("immediately")){
+                                lock.setStateLock(false);
+                                database.lockDAO().updateLock(lock);
+                            }else if(modeLock.equals("screen_off"))
+                            {
+                                lock.setStateLockScreenOff(false);
+                                database.lockDAO().updateLock(lock);
+
+                            }else{
+
+                            }
+
+                        }
+
+                        finish();
+
+                    }else {
+                        tvNameMode.setText("Error");
+                        tvPassword.setText("");
+                    }
+                }
+
+            }
+        });
+
         LayoutInflater inflater = LayoutInflater.from(this);
 
         handleClick();
-
 
 
     }
@@ -173,19 +235,58 @@ public class OverlayActivity extends AppCompatActivity {
             @Override
             public void onComplete(List<PatternLockView.Dot> pattern) {
 
-                if (password.equals(PatternLockUtils.patternToString(patternLockView, pattern))) {
+                if (passwordPattern.equals(PatternLockUtils.patternToString(patternLockView, pattern))) {
+                    // mở mật khẩu pattern thành công
 
                     // tat che do lock
 
-                    // Gửi broadcast với nội dung
+                    // gửi suwjkienej về service
                     Intent intent = new Intent("ACTION_LOCK_APP");
                     intent.putExtra("message", packageApp);
                     sendBroadcast(intent);
 
                     if (lock != null) {
-                        lock.setStateLock(false);
-                        database.lockDAO().updateLock(lock);
+
+                        if(modeLock.equals("immediately")){
+                            lock.setStateLock(false);
+                            database.lockDAO().updateLock(lock);
+                        }else if(modeLock.equals("screen_off"))
+                        {
+                            lock.setStateLockScreenOff(false);
+                            database.lockDAO().updateLock(lock);
+
+                        }else {
+
+                            // trường hợp cuối cùng khóa bằng thời gian
+//                                lock.setStateLockAfterMinute(false);
+
+
+                            Calendar currentTime = Calendar.getInstance();
+
+
+                            int hour = currentTime.get(Calendar.HOUR_OF_DAY);
+                            int minute = currentTime.get(Calendar.MINUTE);
+//
+                            int minuteOpen = hour * 60 + minute;
+
+
+                            int minuteClose = hour * 60 + minute + Integer.parseInt(modeLock) ;
+
+                            lock.setTimeClose(String.valueOf(minuteClose));
+
+                            lock.setTimeOpen(String.valueOf(minuteOpen));
+
+                            lock.setStateLockScreenAfterMinute(false);
+
+                            database.lockDAO().updateLock(lock);
+
+
+                            Log.d("thoigiainnn",minuteOpen + " " + minuteClose);
+
+                        }
+
                     }
+
 
                     finish();
 
@@ -227,7 +328,6 @@ public class OverlayActivity extends AppCompatActivity {
 
     public void onNumberClick(View view) {
         Button button = (Button) view;
-        Log.d("fsdfas",button.getText().toString());
 
         String currentText = tvPassword.getText().toString();
         String buttonText = button.getText().toString();
@@ -249,6 +349,7 @@ public class OverlayActivity extends AppCompatActivity {
         super.onStart();
     }
 
+
     @Override
     protected void onStop() {
 
@@ -256,5 +357,9 @@ public class OverlayActivity extends AppCompatActivity {
         super.onStop();
     }
 
-
+    @Override
+    protected void onDestroy() {
+        finish();
+        super.onDestroy();
+    }
 }

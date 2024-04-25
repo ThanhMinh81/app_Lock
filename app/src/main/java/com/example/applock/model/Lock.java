@@ -14,12 +14,24 @@ public class Lock implements Parcelable {
     @PrimaryKey(autoGenerate = true)
     private int idApp;
 
+    // trường này check xem app đó có đang bị khóa không
 
     private boolean stateLock;
+
+    // trường này chech xem có được mở hay khóa ở trạng thái tắt/mở màn hình
+    private boolean stateLockScreenOff = false;
+
+    // true  là khóa
+    // false là mở khóa
 
     private String packageApp;
     @Ignore
     private ApplicationInfo applicationInfo;
+
+    private String timeOpen = "0";
+    private String timeClose = "0";
+
+    private boolean stateLockScreenAfterMinute = false;
 
 
     public Lock() {
@@ -37,6 +49,10 @@ public class Lock implements Parcelable {
         stateLock = in.readByte() != 0;
         packageApp = in.readString();
         applicationInfo = in.readParcelable(ApplicationInfo.class.getClassLoader());
+        stateLockScreenOff = in.readByte() != 0;
+        timeClose = in.readString();
+        timeOpen = in.readString();
+        stateLockScreenAfterMinute = in.readByte() != 0;
     }
 
     public static final Creator<Lock> CREATOR = new Creator<Lock>() {
@@ -63,6 +79,14 @@ public class Lock implements Parcelable {
         return stateLock;
     }
 
+    public boolean isStateLockScreenOff() {
+        return stateLockScreenOff;
+    }
+
+    public void setStateLockScreenOff(boolean stateLockScreenOff) {
+        this.stateLockScreenOff = stateLockScreenOff;
+    }
+
     public void setStateLock(boolean stateLock) {
         this.stateLock = stateLock;
     }
@@ -83,6 +107,31 @@ public class Lock implements Parcelable {
         this.applicationInfo = applicationInfo;
     }
 
+    public boolean isStateLockScreenAfterMinute() {
+        return stateLockScreenAfterMinute;
+    }
+
+    public void setStateLockScreenAfterMinute(boolean stateLockScreenAfterMinute) {
+        this.stateLockScreenAfterMinute = stateLockScreenAfterMinute;
+    }
+
+    public String getTimeOpen() {
+        return timeOpen;
+    }
+
+    public void setTimeOpen(String timeOpen) {
+        this.timeOpen = timeOpen;
+    }
+
+    public String getTimeClose() {
+        return timeClose;
+    }
+
+    public void setTimeClose(String timeClose) {
+        this.timeClose = timeClose;
+    }
+
+
     @Override
     public int describeContents() {
         return 0;
@@ -94,5 +143,9 @@ public class Lock implements Parcelable {
         parcel.writeByte((byte) (stateLock ? 1 : 0));
         parcel.writeString(packageApp);
         parcel.writeParcelable(applicationInfo, i);
+        parcel.writeByte((byte) (stateLockScreenOff ? 1 : 0));
+        parcel.writeString(timeClose);
+        parcel.writeString(timeOpen);
+        parcel.writeByte((byte) (stateLockScreenAfterMinute ? 1 : 0));
     }
 }

@@ -23,6 +23,10 @@ public interface LockDAO {
     @Query("SELECT COUNT(*) FROM lockApps WHERE packageApp = :packageName AND stateLock = 1")
     int isPackageLocked(String packageName);
 
+
+    @Query("SELECT COUNT(*) FROM lockApps WHERE packageApp = :packageName AND stateLockScreenOff = 1")
+    int isLockedScreen(String packageName);
+
     @Query("SELECT * FROM lockApps WHERE packageApp = :packageName LIMIT 1")
     Lock getLockByPackageName(String packageName);
 

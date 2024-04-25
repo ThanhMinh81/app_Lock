@@ -1,9 +1,14 @@
 package com.example.applock.fragment;
 
+import static android.content.Context.ALARM_SERVICE;
+import static androidx.core.content.ContextCompat.getSystemService;
+
+import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -38,13 +43,9 @@ public class HomeFragment extends Fragment {
     ArrayList<ApplicationInfo> infoArrayList;
     ItemClickListenerLock itemClickListenerLock;
     LockDatabase lockDatabase;
-
     ArrayList<Lock> appSystem;
-
     LockDatabase database;
-
     Button btnOff;
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -98,8 +99,15 @@ public class HomeFragment extends Fragment {
 
         infoArrayList = new ArrayList<>();
 
-        Intent intent = new Intent(getContext(), LockService.class);
-        getContext().startService(intent);
+//        Intent intent = new Intent(getContext(), LockService.class);
+//        getContext().startService(intent);
+
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getContext().startForegroundService(new Intent(getContext(), LockService.class));
+        } else {
+            getContext().startService(new Intent(getContext(), LockService.class));
+        }
 
         homeAdapter = new HomeAdapter(getContext(), appSystem, database);
 
@@ -109,10 +117,15 @@ public class HomeFragment extends Fragment {
         rcvHome.setAdapter(homeAdapter);
         homeAdapter.notifyDataSetChanged();
 
-//        btnOff.setOnClickListener(v -> {
-//            Intent intent1 = new Intent(getContext(), LockService.class);
-//            getContext().stopService(intent1);
-//        });
+        btnOff.setOnClickListener(v -> {
+            Intent intent1 = new Intent(getContext(), LockService.class);
+            getContext().stopService(intent1);
+        });
+
+
+
+
+
 
 
         return view;

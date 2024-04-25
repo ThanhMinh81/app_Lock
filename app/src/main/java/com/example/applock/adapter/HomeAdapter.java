@@ -17,6 +17,7 @@ import com.example.applock.R;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.model.Lock;
 
+import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
@@ -66,6 +67,10 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
             if (lock.isStateLock()) {
                 // xóa khỏi mode lock
                 lock.setStateLock(false);
+                lock.setStateLockScreenOff(false);
+
+                lock.setStateLockScreenAfterMinute(false);
+
                 int updateState = lockDatabase.lockDAO().updateLock(lock);
 
                 if (updateState != 0) {
@@ -75,6 +80,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
             } else {
                 // them vao lock
                 lock.setStateLock(true);
+                lock.setStateLockScreenOff(true);
+                lock.setStateLockScreenAfterMinute(true);
 
                 int updateState = lockDatabase.lockDAO().updateLock(lock);
 
