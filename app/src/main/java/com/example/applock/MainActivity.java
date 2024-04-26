@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.fingerprint.FingerprintManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,6 +56,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import androidx.appcompat.app.ActionBarDrawerToggle;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 
@@ -105,29 +107,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-//        BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-//                .setTitle("Xác thực vân tay")
-//                .setNegativeButtonText("Hủy")
-//                .build();
-//
-//        BiometricPrompt biometricPrompt = new BiometricPrompt(this, Executors.newSingleThreadExecutor(), new BiometricPrompt.AuthenticationCallback() {
-//            @Override
-//            public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
-//                // Xác thực thành công
-//                Log.d("rưqeyqrfasf","iofdsahfa");
-//                super.onAuthenticationSucceeded(result);
-//            }
-//
-//            @Override
-//            public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
-//                // Xác thực thất bại
-//                Log.d("rưqeyqrfasf","thattbaaiaiai");
-//
-//                super.onAuthenticationError(errorCode, errString);
-//            }
-//        });
-//
-//        biometricPrompt.authenticate(promptInfo);
+//         boolean checkFinger = isFingerprintAuthAvailable(this);
+//        boolean enableFinger = isFingerprintRegistered(this);
+//        Log.d("dpfupsadpsaf",checkFinger + "  ==  " + enableFinger );
 
 
         //========================//
@@ -207,21 +189,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
 
 
-        HomeWatcher mHomeWatcher = new HomeWatcher(this);
-        mHomeWatcher.setOnHomePressedListener(new OnHomePressedListener() {
-            @Override
-            public void onHomePressed() {
 
-                Log.e("AHSAN", "onHomePressed: ");
-            }
-
-
-            @Override
-            public void onHomeLongPressed() {
-                Log.e("AHSAN", "onHomePressed: ");
-
-            }
-        });
 
 
 //        spinnerSelected.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -269,7 +237,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName()));
         startActivityForResult(intent, REQUEST_OVERLAY_PERMISSION);
     }
-
 
 
     @Override

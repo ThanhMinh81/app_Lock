@@ -33,4 +33,20 @@
     </style>
 
 
+    <style name="AppTheme.RoundedCornerMaterialButton" parent="Widget.AppCompat.Button.Colored">
+        <item name="android:background">@drawable/bg_button_setting</item>
+        <item name="backgroundColor">@color/bg_toolbar</item>
+        <item name="android:padding">0dp</item>
+    </style>
+    
+    <style name="MyDialogTheme" parent="Theme.AppCompat.Dialog">
+         <item name="android:background">@color/white</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:windowMinWidthMajor">100%</item>
+        <item name="android:windowMinWidthMinor">100%</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
+
 </resources>

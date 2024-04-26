@@ -27,7 +27,7 @@
 
 
     <application
-        android:name=".MyApplication"
+        android:name=".MyApplicationNotification"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -69,7 +69,7 @@
         </activity>
 
 
-        <receiver android:name=".service.LockService$Broadcast"
+        <receiver android:name=".service.LockService$BroadcastActionLockApp"
             android:exported="true"
             android:enabled="true">
             <intent-filter>
@@ -78,16 +78,16 @@
         </receiver>
 
 
-        <receiver android:name=".ScreenReceiver"
-            android:exported="true"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="android.intent.action.AIRPLANE_MODE"/>
-            </intent-filter>
-        </receiver>
+<!--        <receiver android:name=".ScreenReceiver"-->
+<!--            android:exported="true"-->
+<!--            android:enabled="true">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.AIRPLANE_MODE"/>-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
 
-        <receiver android:name=".MyAlarmReceiver"  android:exported="true"
-            android:enabled="true"/>
+<!--        <receiver android:name=".MyAlarmReceiver"  android:exported="true"-->
+<!--            android:enabled="true"/>-->
 
     </application>
 

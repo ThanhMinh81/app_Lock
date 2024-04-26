@@ -2,9 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="6dp"
-    android:layout_marginLeft="10dp"
-    android:layout_marginRight="10dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="18dp"
     android:orientation="vertical">
 
     <TextView
@@ -16,6 +15,7 @@
         android:textStyle="bold" />
 
     <LinearLayout
+        android:layout_marginLeft="10dp"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -41,8 +41,9 @@
             android:theme="@style/MyRadioButton" />
 
         <LinearLayout
-            android:paddingRight="10dp"
+            android:paddingTop="10dp"
             android:layout_marginTop="10dp"
+            android:paddingBottom="10dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
               android:gravity="center"
@@ -70,7 +71,7 @@
             android:gravity="center"
             android:orientation="horizontal"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <TextView
 
@@ -96,45 +97,40 @@
 
         </LinearLayout>
 
-        <RelativeLayout
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="20dp"
-            android:layout_width="360dp"
-            android:layout_height="wrap_content">
+    </LinearLayout>
 
-            <TextView
-                android:layout_alignParentStart="true"
-                android:id="@+id/tvCancel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_color_cancel_button"
-                android:gravity="center"
-                android:paddingLeft="40sp"
-                android:paddingRight="40dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:text="Cancel"
-                android:textColor="@color/black"
-                android:textSize="17sp"/>
+    <LinearLayout
+        android:layout_marginTop="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_alignParentEnd="true"
-                android:id="@+id/tvOk"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_color_button"
-                android:gravity="center"
-                android:paddingLeft="45sp"
-                android:paddingRight="45dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:text="OK"
-                android:textColor="@color/white"
-                android:textSize="17sp"/>
+        <com.google.android.material.button.MaterialButton
+            android:layout_weight="1"
+            android:id="@+id/tvCancel"
+            android:text="@string/txt_cancel_button"
+            app:cornerRadius="2dp"
+            android:textSize="13sp"
+            android:minHeight="45dp"
+                android:layout_marginEnd="10dp"
+            app:backgroundTint="#7f8fa6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-        </RelativeLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_weight="1"
+           android:layout_marginStart="10dp"
+            android:id="@+id/tvOk"
+            android:text="@string/txt_ok_button"
+            android:minHeight="45dp"
+            app:cornerRadius="2dp"
+            android:textSize="13sp"
+            app:backgroundTint="#00a8ff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
 
     </LinearLayout>
+
 
 </LinearLayout>

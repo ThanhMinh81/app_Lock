@@ -15,5 +15,11 @@
     <string name="nav_close">Close</string>
     <string name="title_activity_main2">MainActivity2</string>
     <string name="after_screen_off">After screen off</string>
+    <string name="txt_register_finger">Register Fingerprint</string>
+    <string name="txt_context_regisfinger">No Fingers Registered , please register your fingerprint in security settings</string>
+    <string name="txt_setting_finger">Go to Settings</string>
+    <string name="txt_btn_setting">Go to Setting</string>
+    <string name="txt_cancel_button">Cancel</string>
+    <string name="txt_ok_button">OK</string>
 
 </resources>

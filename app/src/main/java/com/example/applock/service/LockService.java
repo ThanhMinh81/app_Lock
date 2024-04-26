@@ -1,6 +1,6 @@
 package com.example.applock.service;
 
-import static com.example.applock.MyApplication.CHAINNEL_ID;
+import static com.example.applock.MyApplicationNotification.CHAINNEL_ID;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
@@ -34,7 +34,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
 
-import com.example.applock.MyAlarmReceiver;
 import com.example.applock.OverlayActivity;
 import com.example.applock.R;
 import com.example.applock.db.LockDatabase;
@@ -58,58 +57,19 @@ public class LockService extends Service {
     private boolean isServiceRunning = false;
 
     public BroadcastReceiver receiverLockCurrent;
-    private String currentLock = "";
 
+    private String currentPackageLock = "";
     private String packageTemp = "null";
-
     private String modeLock = "immediately";
     private boolean screenOff = false;
 
     ArrayList<Lock> lockAppModeOffScreenList;
-
-    ArrayList<Lock> lockAppModeAfterMinuteList;
-
-
 
     @Override
     public void onCreate() {
 
         lockAppModeOffScreenList = new ArrayList<>();
 
-        lockAppModeAfterMinuteList = new ArrayList<>();
-
-        // broadcast lang nghe 1 app duoc open : tra ve package app
-
-        receiverLockCurrent = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String message = intent.getStringExtra("message");
-                currentLock = message;
-            }
-        };
-
-        // lang nghe on offf screeeen
-        screenReceiverOn = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_ON)) {
-                    screenOff = false;
-//                    Log.d("094394024013", screenOff + " ");
-                } else if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_OFF)) {
-                    screenOff = true;
-
-                }
-            }
-        };
-
-//         registerReceiver(screenReceiverOn, new IntentFilter(Intent.ACTION_SCREEN_ON));
-        registerReceiver(screenReceiverOn, new IntentFilter(Intent.ACTION_SCREEN_OFF));
-
-        // Đăng ký BroadcastReceiver với IntentFilter để lắng nghe broadcast có action "ACTION_SEND_MESSAGE"
-        IntentFilter filter = new IntentFilter("ACTION_LOCK_APP");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerReceiver(receiverLockCurrent, filter, RECEIVER_EXPORTED);
-        }
 
         HandlerThread handlerThread = new HandlerThread("MyHandlerThread");
         handlerThread.start();
@@ -120,8 +80,54 @@ public class LockService extends Service {
 
         locks.addAll(database.lockDAO().getListApps());
 
+        initBroadCast();
+
 
         super.onCreate();
+
+    }
+
+    private void initBroadCast() {
+
+
+        receiverLockCurrent = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                String message = intent.getStringExtra("message");
+                Log.d("3590fu053453", message);
+                currentPackageLock = message;
+
+            }
+        };
+
+
+        IntentFilter filter = new IntentFilter("ACTION_LOCK_APP");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            // ANDROID 8.0 TRO LEN
+            registerReceiver(receiverLockCurrent, filter, RECEIVER_EXPORTED);
+
+        }
+
+        //== broadcast screen ==
+
+        // lang nghe on offf screeeen
+        screenReceiverOn = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_ON)) {
+                    screenOff = false;
+                } else if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_OFF)) {
+                    // manf hinfh tat
+                    screenOff = true;
+
+                    Log.d("5345g3525","fsdhfow");
+                }
+            }
+        };
+
+        registerReceiver(screenReceiverOn, new IntentFilter(Intent.ACTION_SCREEN_OFF));
 
     }
 
@@ -132,16 +138,22 @@ public class LockService extends Service {
 
         if (!isServiceRunning) {
 
-            Intent intent1 = new Intent(this, HomeFragment.class);
+            Intent intentNotifi = new Intent(this, HomeFragment.class);
 
-            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent1, PendingIntent.FLAG_MUTABLE);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intentNotifi, PendingIntent.FLAG_MUTABLE);
 
 
-            Notification notification1 = new NotificationCompat.Builder(this, CHAINNEL_ID).setContentTitle("AppLock").setContentText("Protecting your apps").setSmallIcon(R.drawable.ic_launcher_background).setContentIntent(pendingIntent).build();
+            Notification notification = new NotificationCompat.Builder(this, CHAINNEL_ID)
+                    .setContentTitle("AppLock")
+                    .setContentText("Protecting your apps")
+                    .setSmallIcon(R.drawable.ic_launcher_background)
+                    .setContentIntent(pendingIntent).build();
 
-            startForeground(1, notification1);
+            startForeground(1, notification);
+
 
         }
+
         isServiceRunning = true;
 
 
@@ -149,7 +161,7 @@ public class LockService extends Service {
             @Override
             public void run() {
                 try {
-                    overlayPassWord();
+                    runAppLockChecker();
                 } catch (PackageManager.NameNotFoundException e) {
                     throw new RuntimeException(e);
                 }
@@ -163,7 +175,7 @@ public class LockService extends Service {
     }
 
 
-    private void overlayPassWord() throws PackageManager.NameNotFoundException {
+    private void runAppLockChecker() throws PackageManager.NameNotFoundException {
         while (true) {
 
             try {
@@ -193,17 +205,27 @@ public class LockService extends Service {
 
 
             if (modeLock.equals("immediately")) {
+
                 if (database.lockDAO().isPackageLocked(result) != 0) {
                     showOverlayPassWord(result);
                 }
 
             } else if (modeLock.equals("screen_off")) {
-                if (database.lockDAO().isLockedScreen(result) != 0) {
-                    showOverlayPassWord(result);
-                }
-            } else {
-//                Lock lock = database.lockDAO().getLockByPackageName(result);
+                // nó chỉ mở ở chế độ islock thoi mà
+//                if (database.lockDAO().isLockedScreen(result) != 0 ) {
+//                    showOverlayPassWord(result);
+//                }
 
+                Lock lock = database.lockDAO().getLockByPackageName(result);
+                if (lock != null) {
+                    if (lock.isStateLock() && lock.isStateLockScreenOff()) {
+//                        Log.d("sdffsaf385785345",lock.getPackageApp().toString());
+                        showOverlayPassWord(result);
+                    }
+                }
+
+
+            } else {
 
                 if (database.lockDAO().isPackageLocked(result) != 0) {
 
@@ -214,13 +236,13 @@ public class LockService extends Service {
                         if (lock.isStateLockScreenAfterMinute()) {
 
                             // nếu nó đang là true thì show overlay
+
                             showOverlayPassWord(result);
 
                         } else if (!lock.isStateLockScreenAfterMinute()) {
                             // false
 
                             Calendar currentTime = Calendar.getInstance();
-
 
                             int hour = currentTime.get(Calendar.HOUR_OF_DAY);
                             int minute = currentTime.get(Calendar.MINUTE);
@@ -241,7 +263,6 @@ public class LockService extends Service {
                                 database.lockDAO().updateLock(lock);
 
                             }
-
                         }
 
                     } else {
@@ -257,65 +278,56 @@ public class LockService extends Service {
 
                 // app đó đang bị khóa và mode immediately
 
-                if (currentLock != null && currentLock.length() > 0) {
-                    if (!result.equals(packageTemp) && !result.equals("null") && !packageTemp.equals("null") && !result.equals("com.example.applock") && !packageTemp.equals("com.example.applock")) {
+                if (currentPackageLock != null && currentPackageLock.length() > 2) {
+                    if (!result.equals(packageTemp)
+                            && !result.equals("null")
+                            && !packageTemp.equals("null")
+                            && !result.equals("com.example.applock")
+                            && !packageTemp.equals("com.example.applock")) {
                         // chỉ khi nào 2 package khác nhau thi goi laij ham nay
+                        // sau khi check nếu màn hình thay đổi ứng dụng thì khóa lại app đã mở trước đó
 
-                        Lock lock = database.lockDAO().getLockByPackageName(currentLock);
+
+                        Lock lock = database.lockDAO().getLockByPackageName(currentPackageLock);
                         lock.setStateLock(true);
                         database.lockDAO().updateLock(lock);
-                        // sau khi update thanh cong clear currentLock
-                        currentLock = "";
+                        // sau khi update thanh cong clear currentPackageLock
+                        currentPackageLock = "";
+
                     }
                 }
 
             } else if (modeLock.equals("screen_off")) {
                 // app khoa & mode lock screen
 
-                // currentLock là biến mà bên màn hình overlay sau khi mở khóa thành công trả về thông qua broadcast
+                // currentPackageLock là biến mà bên màn hình overlay sau khi mở khóa thành công trả về thông qua broadcast
                 // nên nó là package của app đang bị khóa
 
-                if (currentLock.trim().length() > 4) {
+                if (currentPackageLock.trim().length() > 4) {
 
-                    Log.d("90hfiosf90wur0923r", currentLock);
-                    receiverLockCurrent(currentLock, true);
-                    currentLock = "";
+//                    Log.d("90hfiosf90wur0923r", currentPackageLock);
+                    getLockByPackage(currentPackageLock);
+
+                    currentPackageLock = "";
+
 
                 }
 
                 // moi truong trong app time open
 
                 if (screenOff) {
+                    // kkhi tắt màn hình thì xét cho tất cả các app đã mở về chế độ khóa lại
                     if (!lockAppModeOffScreenList.isEmpty()) {
                         lockListAppOffScreen();
-                        currentLock = "";
                         screenOff = false;
+                        currentPackageLock = "";
                     }
-                }
-
-            } else {
-
-
-                // khóa tất cả
-                // khi người dùng mở một app thì viết time open và tính time close dựa trên modeLock
-                //cứ mỗi lần người dùng mở app trừ đi thời gian trước đó : lớn hơn hoặc bằng time modeLock thì khóa ngược lại thì không
-
-                // ứng dụng đó phariddang bị khóa
-                if (database.lockDAO().isPackageLocked(result) != 0) {
-//                    if(currentLock.trim().length() > 4)
-//                    {
-//                        receiverLockCurrent(currentLock,false);
-//                        currentLock = "";
-//                    }
 
                 }
 
             }
 
-                packageTemp = result;
-
-
-            Log.d("siofdhosaifaf",packageTemp);
+            packageTemp = result;
 
         }
     }
@@ -345,7 +357,6 @@ public class LockService extends Service {
                 bitmap = null;
             }
         }
-        // taoj them 1 table : luu cac app dang bi khoa , khong dong gi den app goc
 
         if (bitmap != null) {
 
@@ -369,7 +380,11 @@ public class LockService extends Service {
 
     private void lockListAppOffScreen() {
 
-        for (int i = 0; i < lockAppModeOffScreenList.size(); i++) {
+        // danh sach cac package dang bi khoa
+
+        Log.d("osdf3rfsadfaf", lockAppModeOffScreenList.size() + " ");
+
+        for (int i = 0 ; i < lockAppModeOffScreenList.size(); i++) {
             Lock lock = lockAppModeOffScreenList.get(i);
             lock.setStateLockScreenOff(true);
             database.lockDAO().updateLock(lock);
@@ -379,16 +394,16 @@ public class LockService extends Service {
 
     }
 
-    private void receiverLockCurrent(String currentLock, boolean screenOff) {
+    private void getLockByPackage(String currentLock) {
 
         Lock lock = database.lockDAO().getLockByPackageName(currentLock);
 
         if (lock != null) {
-            if (screenOff) {
+
+            if(!lockAppModeOffScreenList.contains(lock))
+            {
                 // screenOff la mode tat man hinh de khoa
                 lockAppModeOffScreenList.add(lock);
-            } else {
-                lockAppModeAfterMinuteList.add(lock);
             }
 
         }
@@ -454,14 +469,15 @@ public class LockService extends Service {
     }
 
 
-    public class Broadcast extends BroadcastReceiver {
+    public class BroadcastActionLockApp extends BroadcastReceiver {
 
         @Override
         public void onReceive(Context context, Intent intent) {
-
+            Log.d("095830525fsfsa", "sàadfsf");
         }
 
     }
+
 
 //
 //    public void scheduleLock(int minutes) {

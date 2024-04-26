@@ -1,17 +1,13 @@
 package com.example.applock.fragment;
 
-import static android.content.Context.MODE_PRIVATE;
-
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.hardware.fingerprint.FingerprintManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,11 +18,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TableLayout;
@@ -35,6 +29,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 import androidx.fragment.app.Fragment;
 
 
@@ -43,8 +38,6 @@ import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
 import com.example.applock.R;
 import com.google.android.material.button.MaterialButton;
-
-import org.w3c.dom.Text;
 
 import java.util.List;
 
@@ -78,6 +71,8 @@ public class SettingFragment extends Fragment {
 
     SharedPreferences modeLockSpf ;
 
+    RelativeLayout layoutFingerPrint ;
+
     public SettingFragment() {
     }
 
@@ -93,8 +88,9 @@ public class SettingFragment extends Fragment {
         layoutRelockApp = view.findViewById(R.id.layout_relockApp);
         tvCurrentModeLock = view.findViewById(R.id.tvCurrentModeLock);
         cbUnlockFinger = view.findViewById(R.id.cbUnlockFingerPassword);
+        layoutFingerPrint = view.findViewById(R.id.layoutFingerPrint);
 
-          modeLockSpf = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
+        modeLockSpf = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
         lockModeCurrent = modeLockSpf.getString("lock_mode", "immediately");
 
         if (lockModeCurrent.equals("immediately")) {
@@ -131,13 +127,50 @@ public class SettingFragment extends Fragment {
             showDialogRelockApp();
         });
 
+        layoutFingerPrint.setOnClickListener(v -> {
+
+             boolean checkFinger = isFingerprintRegistered(getContext());
+             if(!checkFinger)
+             {
+                 showDialogEnableFinger();
+
+//                 Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+//                 getContext().startActivity(intent);
+
+             }
+
+
+
+        });
+
 
         return view;
     }
 
+    private void showDialogEnableFinger() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.MyDialogTheme);
+        LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
+        dialogPattern = layoutInflater.inflate(R.layout.dialog_register_finger, null);
+
+        builder.setView(dialogPattern);
+        AlertDialog dialog = builder.create();
+        Window window = dialog.getWindow();
+        WindowManager.LayoutParams params = window.getAttributes();
+
+// Set gravity to center
+        params.gravity = Gravity.CENTER;
+
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+        dialog.show();
+
+
+    }
+
     private void showDialogRelockApp() {
         RadioButton rbImedia, rbScreenOff, rbAfterMinute;
-        TextView tvCancel, tvOk;
+        MaterialButton tvCancel, tvOk;
         SeekBar seekBarMinute;
         TextView tvMinute;
 
@@ -156,7 +189,7 @@ public class SettingFragment extends Fragment {
             minuteLock = String.valueOf(1);
         }
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.WrapContentDialog);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.MyDialogTheme);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
         dialogPattern = layoutInflater.inflate(R.layout.relock_dialog_layout, null);
         rbImedia = dialogPattern.findViewById(R.id.rb_immedia);
@@ -172,11 +205,10 @@ public class SettingFragment extends Fragment {
         Window window = dialog.getWindow();
         WindowManager.LayoutParams params = window.getAttributes();
         params.gravity = Gravity.CENTER;
-        params.width = WindowManager.LayoutParams.MATCH_PARENT;
-        params.height = WindowManager.LayoutParams.MATCH_PARENT;
+
 
         window.setAttributes(params);
-        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
 
         dialog.show();
 
@@ -209,10 +241,11 @@ public class SettingFragment extends Fragment {
 
                 if (checked) {
                     if (clickedRadioButton.getId() == R.id.rb_immedia) {
+
                         rbScreenOff.setChecked(false);
                         rbAfterMinute.setChecked(false);
-                    } else if (clickedRadioButton.getId() == R.id.rbAfterMinute) {
 
+                    } else if (clickedRadioButton.getId() == R.id.rbAfterMinute) {
 
                         rbImedia.setChecked(false);
                         rbScreenOff.setChecked(false);
@@ -221,6 +254,7 @@ public class SettingFragment extends Fragment {
                         rbImedia.setChecked(false);
                         rbAfterMinute.setChecked(false);
                     }
+
                 }
 
             }
@@ -296,9 +330,9 @@ public class SettingFragment extends Fragment {
 
     private void showDialogChangePin() {
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.WrapContentDialog);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.MyDialogTheme);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
-        dialogPattern = layoutInflater.inflate(R.layout.pin_dialog_layout, null);
+        dialogPattern = layoutInflater.inflate(R.layout.dialog_pin_password, null);
 
         initViewDialog();
 
@@ -323,9 +357,7 @@ public class SettingFragment extends Fragment {
             dialog.dismiss();
         });
 
-
         eventClickView();
-
 
     }
 
@@ -333,7 +365,6 @@ public class SettingFragment extends Fragment {
 
 
         btnCheck.setOnClickListener(v -> {
-
 
             if (tvPin.getText().toString().length() < 2) {
 
@@ -489,7 +520,7 @@ public class SettingFragment extends Fragment {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.WrapContentDialog);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
-        final View dialogPattern = layoutInflater.inflate(R.layout.pattern_dialog_layout, null);
+        final View dialogPattern = layoutInflater.inflate(R.layout.dialog_pattern_password, null);
 
 
         tvTitleDialog = dialogPattern.findViewById(R.id.tvTitleDialog);
@@ -584,6 +615,26 @@ public class SettingFragment extends Fragment {
 
 
     }
+
+
+    // Kiểm tra xem người dùng đã đăng ký vân tay hay chưa
+    // nếu người dùng chưa đăng ký vân tay thì intent đăng ký
+    public   boolean isFingerprintRegistered(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            FingerprintManager fingerprintManager = context.getSystemService(FingerprintManager.class);
+            if (fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints()) {
+                return true;
+            }
+        } else {
+            FingerprintManagerCompat fingerprintManagerCompat = FingerprintManagerCompat.from(context);
+            if (fingerprintManagerCompat != null && fingerprintManagerCompat.hasEnrolledFingerprints()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
 
 }

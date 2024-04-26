@@ -5,7 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.os.Build;
 
-public class MyApplication extends Application {
+public class MyApplicationNotification extends Application {
 
     public static final String CHAINNEL_ID = "chainnel service";
 
@@ -29,7 +29,6 @@ public class MyApplication extends Application {
 
             NotificationManager manager  = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel);
-
 
         }
 
