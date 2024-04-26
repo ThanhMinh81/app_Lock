@@ -69,7 +69,6 @@ public class LockService extends Service {
 
     ArrayList<Lock> lockAppModeAfterMinuteList;
 
-//    private boolean counterTimeAlarm  =false;
 
 
     @Override
@@ -249,23 +248,6 @@ public class LockService extends Service {
                         Log.d("fsadfsda", " -- " + modeLock);
 
                     }
-
-//                    if (lock != null) {
-//                        if (lock.getTimeOpen().equals("0") && lock.getTimeClose().equals("0")) {
-//                            // khi app đó chưa được mở bao giờ
-//                            showOverlayPassWord(result);
-//                        } else {
-//
-//                            int timeLock = Integer.parseInt(lock.getTimeClose()) - Integer.parseInt(lock.getTimeOpen());
-//                            Log.d("nulllllllllllllllllll", timeLock + " == ");
-//
-//                            if (timeLock >= Integer.parseInt(modeLock)) {
-//                                Log.d("nulllllllllllllllllll", timeLock + " == ");
-//                                showOverlayPassWord(result);
-//                            } else {
-//                            }
-//                        }
-//                    }
 
                 }
             }

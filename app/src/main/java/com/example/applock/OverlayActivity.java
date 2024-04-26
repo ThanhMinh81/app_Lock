@@ -47,7 +47,7 @@ public class OverlayActivity extends AppCompatActivity {
 
     boolean patternMode = true;
 
-    TextView tvPassword;
+    TextView tvPin;
     Lock lock;
     private String passwordPattern;
     private String passwordPin ;
@@ -106,11 +106,11 @@ public class OverlayActivity extends AppCompatActivity {
 
             InputFilter[] filterArray = new InputFilter[1];
             filterArray[0] = new InputFilter.LengthFilter(passwordPin.length());
-            tvPassword.setFilters(filterArray);
+            tvPin.setFilters(filterArray);
 
         }
 
-        tvPassword.addTextChangedListener(new TextWatcher() {
+        tvPin.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
@@ -154,7 +154,7 @@ public class OverlayActivity extends AppCompatActivity {
 
                     }else {
                         tvNameMode.setText("Error");
-                        tvPassword.setText("");
+                        tvPin.setText("");
                     }
                 }
 
@@ -170,21 +170,85 @@ public class OverlayActivity extends AppCompatActivity {
 
     private void initView() {
 
-        tvPassword = findViewById(R.id.tvShowPassWord);
+        tvPin = findViewById(R.id.tvShowPassWord);
         imgChangeMode = findViewById(R.id.imgChangeModeComfirm);
         tableLayout = findViewById(R.id.tableLayout);
         patternLockView = findViewById(R.id.pattern_lock_view);
         tvNameMode = findViewById(R.id.tvNameMode);
         imgIconApp = findViewById(R.id.img_iconApp);
         btnClear = findViewById(R.id.btnClear);
+        btn1 = findViewById(R.id.btn1);
+        btn2 = findViewById(R.id.btn2);
+        btn3 = findViewById(R.id.btn3);
+        btn4 = findViewById(R.id.btn4);
+        btn5 = findViewById(R.id.btn5);
+        btn6 = findViewById(R.id.btn6);
+        btn7 = findViewById(R.id.btn7);
+        btn8 = findViewById(R.id.btn8);
+        btn9 = findViewById(R.id.btn9);
+        btn0 = findViewById(R.id.btn0);
 
+
+        btn1.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn2.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn3.setOnClickListener(v -> onClickChangePin(v));
+        btn4.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn5.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn6.setOnClickListener(v -> onClickChangePin(v));
+        btn7.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn8.setOnClickListener(v -> {
+            onClickChangePin(v);
+        });
+        btn9.setOnClickListener(v -> onClickChangePin(v));
+        btn0.setOnClickListener(v -> onClickChangePin(v));
+        btnClear.setOnClickListener(v -> {
+            onClearPinPassword(v);
+        });
+
+        btnClear.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                tvPin.setText("");
+                return false;
+            }
+        });
+
+
+    }
+
+    public void onClickChangePin(View view) {
+        Button button = (Button) view;
+//        Log.d("fsdfas",button.getText().toString());
+        String currentText = tvPin.getText().toString();
+        String buttonText = button.getText().toString();
+        String updatedText = currentText + buttonText;
+        tvPin.setText(updatedText);
+
+    }
+
+    public void onClearPinPassword(View view) {
+        String currentText = tvPin.getText().toString();
+        if (!currentText.isEmpty()) {
+            String newText = currentText.substring(0, currentText.length() - 1);
+            tvPin.setText(newText);
+        }
     }
 
     private void handleClick() {
 
         if (patternMode) {
 
-            tvPassword.setVisibility(View.GONE);
+            tvPin.setVisibility(View.GONE);
             tvNameMode.setText("Draw pattern");
             tableLayout.setVisibility(View.GONE);
             patternLockView.setVisibility(View.VISIBLE);
@@ -192,7 +256,7 @@ public class OverlayActivity extends AppCompatActivity {
         } else {
 
             // xet them cho no lenght cua pass
-            tvPassword.setVisibility(View.VISIBLE);
+            tvPin.setVisibility(View.VISIBLE);
             tvNameMode.setText("Enter pin");
             patternLockView.setVisibility(View.GONE);
             tableLayout.setVisibility(View.VISIBLE);
@@ -205,14 +269,14 @@ public class OverlayActivity extends AppCompatActivity {
 
             if (patternMode) {
 
-                tvPassword.setVisibility(View.GONE);
+                tvPin.setVisibility(View.GONE);
                 tvNameMode.setText("Draw pattern");
                 tableLayout.setVisibility(View.GONE);
                 patternLockView.setVisibility(View.VISIBLE);
                 imgChangeMode.setImageDrawable(getResources().getDrawable(R.drawable.ic_pin_password, null));
 
             } else {
-                tvPassword.setVisibility(View.VISIBLE);
+                tvPin.setVisibility(View.VISIBLE);
                 tvNameMode.setText("Enter pin");
                 patternLockView.setVisibility(View.GONE);
                 tableLayout.setVisibility(View.VISIBLE);
@@ -317,7 +381,7 @@ public class OverlayActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
 
-                tvPassword.setText("");
+                tvPin.setText("");
 
                 return false;
             }
@@ -329,18 +393,18 @@ public class OverlayActivity extends AppCompatActivity {
     public void onNumberClick(View view) {
         Button button = (Button) view;
 
-        String currentText = tvPassword.getText().toString();
+        String currentText = tvPin.getText().toString();
         String buttonText = button.getText().toString();
         String updatedText = currentText + buttonText;
-        tvPassword.setText(updatedText);
+        tvPin.setText(updatedText);
     }
 
 
     public void onClearClick(View view) {
-        String currentText = tvPassword.getText().toString();
+        String currentText = tvPin.getText().toString();
         if (!currentText.isEmpty()) {
             String newText = currentText.substring(0, currentText.length() - 1);
-            tvPassword.setText(newText);
+            tvPin.setText(newText);
         }
     }
 
