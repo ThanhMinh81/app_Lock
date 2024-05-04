@@ -6,4 +6,5 @@
     <color name="bg_fragment_setting">#c0392b</color>
     <color name="color_wrong_password">#e74c3c</color>
     <color name="bg_toolbar">#0984e3</color>
+    <color name="bg_btn">#00C0FF</color>
 </resources>

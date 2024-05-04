@@ -1,5 +1,4 @@
 package com.example.applock;
-
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.app.KeyguardManager;
@@ -25,6 +24,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,59 +70,42 @@ public class OverlayActivity extends AppCompatActivity {
     // nếu không có vân tay thì icon vân tay không được hiển thị
     // check thiết bị có bật vân tay hay không
 
-    private static final String KEY_NAME = "GEEKSFORGEEKS";
-    ImageView imgChangeMode;
+    static final String KEY_NAME = "LOCKAPP";
+    ImageView imgChangeMode , imgFingerMode;
 
     PatternLockView patternLockView;
     TableLayout tableLayout;
     TextView tvNameMode;
-
     ImageView imgIconApp;
     String packageApp;
     LockDatabase database;
     boolean patternMode = true;
     TextView tvPin;
-
-    private Cipher cipher;
-
-    private KeyStore keyStore;
+    Cipher cipher;
+    KeyStore keyStore;
     Lock lock;
-    private String passwordPattern;
-    private String passwordPin;
-
+    String passwordPattern;
+    String passwordPin;
     MaterialButton btnClear;
+    String modeLock;
+    Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
+    KeyguardManager keyguardManager;
+    ItemClickListenerFinger itemClickListenerFinger;
+    String unlockOnlyFinger = "no" , fingerPrintEnable;
+    LinearLayout headerTitleOverlay , layoutNameApp  ;
 
-    private String modeLock;
-    private Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
-    private KeyguardManager keyguardManager;
-    private ItemClickListenerFinger itemClickListenerFinger;
+    SharedPreferences modeLockSpf ;
+    private byte[] byteArrayIcon;
+    private String lockName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // service gửi qua : icon app
-
         EdgeToEdge.enable(this);
-
-        Intent intent = getIntent();
-
-        packageApp = intent.getStringExtra("package");
-
-        // Nhận mảng byte từ Intent
-        byte[] byteArray = getIntent().getByteArrayExtra("picture");
-
-        modeLock = getIntent().getStringExtra("mode_lock");
-
-
-        database = Room.databaseBuilder(getApplicationContext(), LockDatabase.class, "locks_database")
-                .allowMainThreadQueries()
-                .build();
-
-        lock = database.lockDAO().getLockByPackageName(packageApp);
-
+        LayoutInflater inflater = LayoutInflater.from(this);
         setContentView(R.layout.password_layout);
-
 
         initView();
 
@@ -136,52 +119,23 @@ public class OverlayActivity extends AppCompatActivity {
         };
 
 
-        if (byteArray != null) {
-
-            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length);
-
-            imgIconApp.setImageBitmap(bitmap);
-
-        }
-        // send bitmap
-
-        SharedPreferences sharedPreferences = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-        passwordPattern = sharedPreferences.getString("password_pattern", "null");
-        passwordPin = sharedPreferences.getString("password_pin", "null");
-
-        if (!passwordPin.equals("null")) {
-
-            InputFilter[] filterArray = new InputFilter[1];
-            filterArray[0] = new InputFilter.LengthFilter(passwordPin.length());
-            tvPin.setFilters(filterArray);
-
-        }
-
-
-        LayoutInflater inflater = LayoutInflater.from(this);
-
         handleClick();
 
 
-        boolean checkFingerPrint =  isFingerprintAuthAvailable(OverlayActivity.this);
+        boolean checkFingerPrint = isFingerprintAuthAvailable(OverlayActivity.this);
 
 
         // thiet bi ho tro van tay
-        if(checkFingerPrint)
-        {
+        if (checkFingerPrint) {
 
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
-
                 // be hon hoac bang api 28
                 fingerBiometric();
-
             } else {
-
                 // cao hon api 28
                 handleEventFingerPrint();
-
             }
-        }else {
+        } else {
         }
 
 
@@ -220,109 +174,39 @@ public class OverlayActivity extends AppCompatActivity {
 
     }
 
-    private void handleEventFingerPrint() {
-
-        // Initializing KeyguardManager and FingerprintManager
-        keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
-        FingerprintManager fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
-
-        // Here, we are using various security checks
-        // Checking device is inbuilt with fingerprint sensor or not
-        if (!fingerprintManager.isHardwareDetected()) {
-
-            Log.d("FinggerrrPRINTTTT", "Device does not support fingerprint sensor");
-
-            // Setting error message if device
-            // doesn't have fingerprint sensor
-//            errorText.setText("Device does not support fingerprint sensor");
-        } else {
-            // Checking fingerprint permission
-//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
-//                errorText.setText("Fingerprint authentication is not enabled");
-//            }else{
-            // Check for at least one registered finger
-            if (!fingerprintManager.hasEnrolledFingerprints()) {
-//                    errorText.setText("Register at least one finger");
-            } else {
-                // Checking for screen lock security
-                if (!keyguardManager.isKeyguardSecure()) {
-//                        errorText.setText("Screen lock security not enabled");
-                } else {
-
-                    // if everything is enabled and correct then we will generate
-                    // the encryption key which will be stored on the device
-                    generateKey();
-                    if (cipherInit()) {
-                        FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
-                        FingerprintHandler helper = new FingerprintHandler(this);
-                        helper.Authentication(fingerprintManager, cryptoObject, itemClickListenerFinger);
-                    }
-                }
-            }
-//            }
-        }
-    }
-
-
-    protected void generateKey() {
-        try {
-            keyStore = KeyStore.getInstance("AndroidKeyStore");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-
-        KeyGenerator keyGenerator;
-        try {
-            keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
-            throw new RuntimeException("KeyGenerator instance failed", e);
-        }
-
-        try {
-            keyStore.load(null);
-            keyGenerator.init(new
-                    KeyGenParameterSpec.Builder(KEY_NAME,
-                    KeyProperties.PURPOSE_ENCRYPT |
-                            KeyProperties.PURPOSE_DECRYPT)
-                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                    .setUserAuthenticationRequired(true)
-                    .setEncryptionPaddings(
-                            KeyProperties.ENCRYPTION_PADDING_PKCS7)
-                    .build());
-            keyGenerator.generateKey();
-        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | IOException |
-                 CertificateException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    public boolean cipherInit() {
-        try {
-            cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/" + KeyProperties.BLOCK_MODE_CBC + "/" + KeyProperties.ENCRYPTION_PADDING_PKCS7);
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
-            throw new RuntimeException("Cipher failed", e);
-        }
-
-        try {
-            keyStore.load(null);
-            SecretKey key = (SecretKey) keyStore.getKey(KEY_NAME,
-                    null);
-            cipher.init(Cipher.ENCRYPT_MODE, key);
-            return true;
-        } catch (KeyPermanentlyInvalidatedException e) {
-            return false;
-        } catch (KeyStoreException | UnrecoverableKeyException | IOException |
-                 NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new RuntimeException("Cipher initialization failed", e);
-        } catch (java.security.cert.CertificateException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     private void initView() {
+
+        SharedPreferences sharedPreferences = getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+        passwordPattern = sharedPreferences.getString("password_pattern", "null");
+        passwordPin = sharedPreferences.getString("password_pin", "null");
+
+        modeLockSpf = OverlayActivity.this.getSharedPreferences("LockMode", Context.MODE_PRIVATE);
+
+        fingerPrintEnable = modeLockSpf.getString("finger_print", "no");
+
+        if (fingerPrintEnable.equals("yes")) {
+            unlockOnlyFinger = modeLockSpf.getString("unlock_only_finger", "no");
+        }
+
+          Intent intent = getIntent();
+
+        lockName = intent.getStringExtra("lock_name");
+
+        if (lockName.equals("lockScreenApp"))
+        {
+            packageApp = intent.getStringExtra("package");
+
+            byteArrayIcon = getIntent().getByteArrayExtra("picture");
+            modeLock = getIntent().getStringExtra("mode_lock");
+
+            database = Room.databaseBuilder(getApplicationContext(), LockDatabase.class, "locks_database")
+                    .allowMainThreadQueries()
+                    .build();
+            lock = database.lockDAO().getLockByPackageName(packageApp);
+
+        }
+
 
         tvPin = findViewById(R.id.tvShowPassWord);
         imgChangeMode = findViewById(R.id.imgChangeModeComfirm);
@@ -330,6 +214,19 @@ public class OverlayActivity extends AppCompatActivity {
         patternLockView = findViewById(R.id.pattern_lock_view);
         tvNameMode = findViewById(R.id.tvNameMode);
         imgIconApp = findViewById(R.id.img_iconApp);
+        headerTitleOverlay = findViewById(R.id.layout_title_overlay);
+        layoutNameApp = findViewById(R.id.layoutNameApp);
+
+        imgFingerMode = findViewById(R.id.imgFingerMode);
+
+        if (byteArrayIcon != null) {
+
+            Bitmap bitmap = BitmapFactory.decodeByteArray(byteArrayIcon, 0, byteArrayIcon.length);
+
+            imgIconApp.setImageBitmap(bitmap);
+
+        }
+
         btnClear = findViewById(R.id.btnClear);
         btn1 = findViewById(R.id.btn1);
         btn2 = findViewById(R.id.btn2);
@@ -341,48 +238,69 @@ public class OverlayActivity extends AppCompatActivity {
         btn8 = findViewById(R.id.btn8);
         btn9 = findViewById(R.id.btn9);
         btn0 = findViewById(R.id.btn0);
+        LinearLayout linearLayout = findViewById(R.id.layoutWrapPassword);
+
+        btn1.setOnClickListener(this::onClickChangePin);
+        btn2.setOnClickListener(this::onClickChangePin);
+        btn3.setOnClickListener(this::onClickChangePin);
+        btn4.setOnClickListener(this::onClickChangePin);
+        btn5.setOnClickListener(this::onClickChangePin);
+        btn6.setOnClickListener(this::onClickChangePin);
+        btn7.setOnClickListener(this::onClickChangePin);
+        btn8.setOnClickListener(this::onClickChangePin);
+        btn9.setOnClickListener(this::onClickChangePin);
+        btn0.setOnClickListener(this::onClickChangePin);
+        btnClear.setOnClickListener(this::onClearPinPassword);
+
+        if (unlockOnlyFinger.equals("yes")) {
+
+            imgChangeMode.setVisibility(View.GONE);
+            linearLayout.setVisibility(View.GONE);
+            tvNameMode.setVisibility(View.GONE);
+            tvPin.setVisibility(View.GONE);
+
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT);
 
 
-        btn1.setOnClickListener(v -> {
-            onClickChangePin(v);
-        });
-        btn2.setOnClickListener(v -> {
-            onClickChangePin(v);
-        });
-        btn3.setOnClickListener(v -> onClickChangePin(v));
-        btn4.setOnClickListener(v -> {
-            onClickChangePin(v);
-        });
-        btn5.setOnClickListener(v -> {
-            onClickChangePin(v);
-        });
-        btn6.setOnClickListener(v -> onClickChangePin(v));
-        btn7.setOnClickListener(v -> {
-            onClickChangePin(v);
-        });
-        btn8.setOnClickListener(v -> {
-            onClickChangePin(v);
-        });
-        btn9.setOnClickListener(v -> onClickChangePin(v));
-        btn0.setOnClickListener(v -> onClickChangePin(v));
-        btnClear.setOnClickListener(v -> {
-            onClearPinPassword(v);
+            params.setMargins(0, 0, 0, 120);
+
+            headerTitleOverlay.setLayoutParams(params);
+
+            LinearLayout.LayoutParams paramsNameApp = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.MATCH_PARENT
+            );
+
+            paramsNameApp.setMargins(0,0,0,0);
+            layoutNameApp.setLayoutParams(paramsNameApp);
+
+
+        }
+
+        if(fingerPrintEnable.equals("no"))
+        {
+            imgFingerMode.setVisibility(View.GONE);
+        }
+
+        btnClear.setOnLongClickListener(v -> {
+            tvPin.setText("");
+            return false;
         });
 
-        btnClear.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                tvPin.setText("");
-                return false;
-            }
-        });
+        if (!passwordPin.equals("null")) {
 
+            InputFilter[] filterArray = new InputFilter[1];
+            filterArray[0] = new InputFilter.LengthFilter(passwordPin.length());
+            tvPin.setFilters(filterArray);
+        }
 
     }
 
     public void onClickChangePin(View view) {
         Button button = (Button) view;
-//        Log.d("fsdfas",button.getText().toString());
+
         String currentText = tvPin.getText().toString();
         String buttonText = button.getText().toString();
         String updatedText = currentText + buttonText;
@@ -453,8 +371,6 @@ public class OverlayActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
 
-                Log.d("|0909fsdf", modeLock);
-
                 if (s.length() == passwordPin.length()) {
                     if (s.toString().equals(passwordPin)) {
 
@@ -484,6 +400,7 @@ public class OverlayActivity extends AppCompatActivity {
                 if (passwordPattern.equals(PatternLockUtils.patternToString(patternLockView, pattern))) {
 
                     confirmSuccess();
+
                 } else {
 
                     Handler handler = new Handler();
@@ -520,44 +437,58 @@ public class OverlayActivity extends AppCompatActivity {
     }
 
     private void confirmSuccess() {
-        // gui package ve service
-        Intent intent = new Intent("ACTION_LOCK_APP");
-        intent.putExtra("message", packageApp);
-        sendBroadcast(intent);
 
-        if (lock != null) {
 
-            if (modeLock.equals("immediately")) {
-                lock.setStateLock(false);
-                database.lockDAO().updateLock(lock);
-            } else if (modeLock.equals("screen_off")) {
-                lock.setStateLockScreenOff(false);
-                database.lockDAO().updateLock(lock);
+        if(lockName.equals("lockScreenApp"))
+        {
+            Intent intent = new Intent("ACTION_LOCK_APP");
+            intent.putExtra("message", packageApp);
 
-            } else {
+            sendBroadcast(intent);
 
-                // trường hợp cuối cùng khóa bằng thời gian
-                //
+            if (lock != null) {
 
-                Calendar currentTime = Calendar.getInstance();
+                if (modeLock.equals("immediately")) {
+                    lock.setStateLock(false);
+                    database.lockDAO().updateLock(lock);
+                } else if (modeLock.equals("screen_off")) {
+                    lock.setStateLockScreenOff(false);
+                    database.lockDAO().updateLock(lock);
 
-                int hour = currentTime.get(Calendar.HOUR_OF_DAY);
+                } else {
 
-                int minute = currentTime.get(Calendar.MINUTE);
+                    // trường hợp cuối cùng khóa bằng thời gian
+                    //
 
-                int minuteOpen = hour * 60 + minute;
+                    Calendar currentTime = Calendar.getInstance();
 
-                int minuteClose = hour * 60 + minute + Integer.parseInt(modeLock);
+                    int hour = currentTime.get(Calendar.HOUR_OF_DAY);
 
-                lock.setTimeClose(String.valueOf(minuteClose));
+                    int minute = currentTime.get(Calendar.MINUTE);
 
-                lock.setTimeOpen(String.valueOf(minuteOpen));
+                    int minuteOpen = hour * 60 + minute;
 
-                lock.setStateLockScreenAfterMinute(false);
+                    int minuteClose = hour * 60 + minute + Integer.parseInt(modeLock);
 
-                database.lockDAO().updateLock(lock);
+                    lock.setTimeClose(String.valueOf(minuteClose));
 
+                    lock.setTimeOpen(String.valueOf(minuteOpen));
+
+                    lock.setStateLockScreenAfterMinute(false);
+
+                    database.lockDAO().updateLock(lock);
+
+                }
             }
+
+        }else if(lockName.equals("lockRecentMenu")) {
+
+            // tạo 1 broadcast mới gửi về cho service
+
+            Intent intent = new Intent("ACTION_LOCK_RECENT_MENU");
+            intent.putExtra("message",true);
+            sendBroadcast(intent);
+
         }
 
         finish();
@@ -587,10 +518,8 @@ public class OverlayActivity extends AppCompatActivity {
         super.onStart();
     }
 
-
     @Override
     protected void onStop() {
-
         finish();
         super.onStop();
     }
@@ -619,6 +548,104 @@ public class OverlayActivity extends AppCompatActivity {
     }
 
 
+    private void handleEventFingerPrint() {
+        // Initializing KeyguardManager and FingerprintManager
+        keyguardManager = (KeyguardManager) getSystemService(KEYGUARD_SERVICE);
+        FingerprintManager fingerprintManager = (FingerprintManager) getSystemService(FINGERPRINT_SERVICE);
+
+        // Here, we are using various security checks
+        // Checking device is inbuilt with fingerprint sensor or not
+        if (!fingerprintManager.isHardwareDetected()) {
+
+            Log.d("FinggerrrPRINTTTT", "Device does not support fingerprint sensor");
+
+            // Setting error message if device
+            // doesn't have fingerprint sensor
+//            errorText.setText("Device does not support fingerprint sensor");
+        } else {
+            // Checking fingerprint permission
+//            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) != PackageManager.PERMISSION_GRANTED) {
+//                errorText.setText("Fingerprint authentication is not enabled");
+//            }else{
+            // Check for at least one registered finger
+            if (!fingerprintManager.hasEnrolledFingerprints()) {
+//                    errorText.setText("Register at least one finger");
+            } else {
+                // Checking for screen lock security
+                if (!keyguardManager.isKeyguardSecure()) {
+//                        errorText.setText("Screen lock security not enabled");
+                } else {
+
+                    // if everything is enabled and correct then we will generate
+                    // the encryption key which will be stored on the device
+                    generateKey();
+                    if (cipherInit()) {
+                        FingerprintManager.CryptoObject cryptoObject = new FingerprintManager.CryptoObject(cipher);
+                        FingerprintHandler helper = new FingerprintHandler(this);
+                        helper.Authentication(fingerprintManager, cryptoObject, itemClickListenerFinger);
+                    }
+                }
+            }
+//            }
+        }
+    }
+
+    protected void generateKey() {
+        try {
+            keyStore = KeyStore.getInstance("AndroidKeyStore");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        KeyGenerator keyGenerator;
+        try {
+            keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore");
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException("KeyGenerator instance failed", e);
+        }
+
+        try {
+            keyStore.load(null);
+            keyGenerator.init(new
+                    KeyGenParameterSpec.Builder(KEY_NAME,
+                    KeyProperties.PURPOSE_ENCRYPT |
+                            KeyProperties.PURPOSE_DECRYPT)
+                    .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+                    .setUserAuthenticationRequired(true)
+                    .setEncryptionPaddings(
+                            KeyProperties.ENCRYPTION_PADDING_PKCS7)
+                    .build());
+            keyGenerator.generateKey();
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | IOException |
+                 CertificateException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean cipherInit() {
+        try {
+            cipher = Cipher.getInstance(KeyProperties.KEY_ALGORITHM_AES + "/" + KeyProperties.BLOCK_MODE_CBC + "/" + KeyProperties.ENCRYPTION_PADDING_PKCS7);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException("Cipher failed", e);
+        }
+
+        try {
+            keyStore.load(null);
+            SecretKey key = (SecretKey) keyStore.getKey(KEY_NAME,
+                    null);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
+            return true;
+        } catch (KeyPermanentlyInvalidatedException e) {
+            return false;
+        } catch (KeyStoreException | UnrecoverableKeyException | IOException |
+                 NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException("Cipher initialization failed", e);
+        } catch (java.security.cert.CertificateException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     // kiem tra thiết bị có vân tay hay không
 //    private boolean isAccessGranted() {
@@ -638,8 +665,6 @@ public class OverlayActivity extends AppCompatActivity {
 //        }
 //
 //    }
-
-
 
 
 }

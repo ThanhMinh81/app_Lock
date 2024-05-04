@@ -1,8 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-
     <style name="Base.Theme.AppLock" parent="Theme.Material3.DayNight.NoActionBar">
 
+    </style>
+
+    <style name="MyMaterialButton" parent="Theme.AppCompat.Light">
 
     </style>
 
@@ -38,15 +40,28 @@
         <item name="backgroundColor">@color/bg_toolbar</item>
         <item name="android:padding">0dp</item>
     </style>
-    
+
     <style name="MyDialogTheme" parent="Theme.AppCompat.Dialog">
-         <item name="android:background">@color/white</item>
+        <item name="android:background">@color/white</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:windowMinWidthMajor">100%</item>
         <item name="android:windowMinWidthMinor">100%</item>
         <item name="android:windowIsFloating">false</item>
     </style>
+
+
+    <style name="checkBoxStyle" parent="Theme.AppCompat.Light">
+        <item name="colorAccent">#95a5a6</item>
+        <item name="android:textColorSecondary">#2980b9</item>
+    </style>
+
+    <style name="MyButtonStyle" parent="Widget.AppCompat.Button">
+
+        <item name="android:background">@android:color/transparent</item> <!-- Đặt background -->
+
+    </style >
+
 
 
 </resources>

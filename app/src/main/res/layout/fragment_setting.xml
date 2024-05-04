@@ -93,7 +93,6 @@
 
 
                     <RelativeLayout
-
                         android:clickable="true"
                         android:background="?selectableItemBackground"
                         android:layout_width="match_parent"
@@ -278,7 +277,7 @@
 
 
                     <RelativeLayout
-                        android:id="@+id/layoutFingerPrint"
+                        android:id="@+id/layoutUsegingerPrintUnlock"
                         android:clickable="true"
                         android:background="?selectableItemBackground"
                         android:layout_width="wrap_content"
@@ -286,7 +285,7 @@
 
                         <LinearLayout
                             android:padding="10dp"
-
+                            android:id="@+id/layoutFingerPrint"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:foreground="?android:attr/selectableItemBackground"
@@ -323,11 +322,12 @@
                             </RelativeLayout>
 
                             <ImageView
-                                android:layout_width="30dp"
-                                android:layout_height="30dp"
+                                android:id="@+id/selectFingerUnlock"
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
-                                android:src="@drawable/ic_setting" />
+                                android:src="@drawable/ic_setting_finger" />
 
                             <CheckBox
                                 android:id="@+id/cbUnlockFingerPassword"
@@ -341,9 +341,10 @@
                         <View
                             android:layout_below="@+id/layoutFingerPrint"
                             android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
+                            android:layout_height="0.2dp"
                             android:layout_marginLeft="40dp"
-                            android:background="#888888" />
+                            android:background="#888888"
+                            tools:ignore="NotSibling" />
 
                     </RelativeLayout>
 
@@ -696,11 +697,12 @@
                         android:textStyle="bold" />
 
                     <RelativeLayout
+                        android:id="@+id/layout_lock_recentmenu"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:background="?actionBarItemBackground"
                         android:clickable="true"
+                        android:background="?selectableItemBackground"
                         android:gravity="center_vertical">
 
 
@@ -724,7 +726,6 @@
                                 android:src="@drawable/ic_lock_circle" />
 
                             <TextView
-
                                 android:layout_marginLeft="10dp"
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
@@ -737,11 +738,11 @@
                                 android:layout_gravity="center_vertical"
                                 android:layout_width="30dp"
                                 android:layout_height="match_parent"
-                                android:src="@drawable/ic_setting" />
+                                android:src="@drawable/ic_setting_finger" />
 
 
                             <CheckBox
-                                android:id="@+id/cb_recent"
+                                android:id="@+id/cb_lock_recent"
                                 android:layout_width="25dp"
                                 android:layout_height="25dp"
                                 android:layout_gravity="end"

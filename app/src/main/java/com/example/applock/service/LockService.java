@@ -18,6 +18,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.PixelFormat;
 import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -29,18 +30,28 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.WindowManager;
+import android.widget.Button;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
 
+import com.example.applock.Interface.UnlockRecentMenu;
 import com.example.applock.OverlayActivity;
 import com.example.applock.R;
+import com.example.applock.ScreenLockRecent;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.fragment.HomeFragment;
 import com.example.applock.model.Lock;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
@@ -49,26 +60,56 @@ public class LockService extends Service {
 
     ArrayList<Lock> locks = new ArrayList<>();
 
-    private BroadcastReceiver screenReceiverOn;
-
-    private Handler mHandler;
+    BroadcastReceiver screenReceiverOn;
+    Handler mHandler;
     LockDatabase database;
-
-    private boolean isServiceRunning = false;
-
-    public BroadcastReceiver receiverLockCurrent;
-
-    private String currentPackageLock = "";
-    private String packageTemp = "null";
-    private String modeLock = "immediately";
-    private boolean screenOff = false;
-
+    boolean isServiceRunning = false;
+    BroadcastReceiver receiverLockCurrent;
+    BroadcastReceiver receiverLockRecentMenu;
+    String currentPackageLock = "";
+    String packageTemp = "null";
+    String modeLock = "immediately";
+    boolean screenOff = false;
     ArrayList<Lock> lockAppModeOffScreenList;
+
+    ScreenLockRecent screenLockRecent ;
+
+    final String SYSTEM_DIALOG_REASON_KEY = "reason";
+//    final String SYSTEM_DIALOG_REASON_RECENT_APPS = "recentapps";
+
+    final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
+
+
+    // check file spf da bat lock menu
+    String lockRecentMenu = "";
+
+    // check xem thu man hinh overlay da hien thi hay chua
+    boolean isOverlayMenu = false;
+
+    boolean modeLockRecent = false;
+//    private WindowManager windowManager;
+//    private View floatingView;
+
+    public BroadcastReceiver broadcastReceiver;
+
+
+    UnlockRecentMenu unlockRecentMenu ;
+
+
 
     @Override
     public void onCreate() {
 
+        unlockRecentMenu = new UnlockRecentMenu() {
+            @Override
+            public void unlockSs(boolean unlock) {
+                isOverlayMenu = unlock ;
+            }
+        };
+
         lockAppModeOffScreenList = new ArrayList<>();
+
+            screenLockRecent = new ScreenLockRecent(getApplicationContext() , unlockRecentMenu);
 
 
         HandlerThread handlerThread = new HandlerThread("MyHandlerThread");
@@ -80,13 +121,15 @@ public class LockService extends Service {
 
         locks.addAll(database.lockDAO().getListApps());
 
-        initBroadCast();
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            initBroadCast();
+        }
 
         super.onCreate();
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void initBroadCast() {
 
 
@@ -95,12 +138,10 @@ public class LockService extends Service {
             public void onReceive(Context context, Intent intent) {
 
                 String message = intent.getStringExtra("message");
-                Log.d("3590fu053453", message);
                 currentPackageLock = message;
 
             }
         };
-
 
         IntentFilter filter = new IntentFilter("ACTION_LOCK_APP");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -121,15 +162,114 @@ public class LockService extends Service {
                 } else if (Objects.equals(intent.getAction(), Intent.ACTION_SCREEN_OFF)) {
                     // manf hinfh tat
                     screenOff = true;
-
-                    Log.d("5345g3525","fsdhfow");
                 }
             }
         };
 
         registerReceiver(screenReceiverOn, new IntentFilter(Intent.ACTION_SCREEN_OFF));
 
+//        ============== receiver press recent =====================
+
+        IntentFilter intentFilterACSD = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
+
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                if (intent.getAction().equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
+                    String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
+
+                    if (reason != null) {
+                        if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                              if(screenLockRecent != null)
+                              {
+                                  screenLockRecent.disableOverlay();
+                                  screenLockRecent = null ;
+                              }
+                            }
+
+                        } else if (reason.trim().equals("recentapps")) {
+
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+                                  if(screenLockRecent == null)
+                                  {
+                                      screenLockRecent = new ScreenLockRecent(getApplicationContext() , unlockRecentMenu);
+                                  }
+                                  // hiển thị rồi hiển thị tiếp crash
+
+
+                                    if (screenLockRecent.floatingView != null  && !isOverlayMenu)
+                                    {
+                                        if(!screenLockRecent.isViewAttachedToWindow(screenLockRecent.floatingView))
+                                        {
+                                            Log.d("40935u7235325","fsadfasdfaf");
+                                            screenLockRecent.showScreenPassword();
+                                        }
+                                    }else {
+                                         if(!isOverlayMenu){
+                                             screenLockRecent.showScreenPassword();
+                                         }
+                                    }
+                            }
+
+                        }
+                    }
+                }
+            }
+        };
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            this.registerReceiver(broadcastReceiver, intentFilterACSD, Context.RECEIVER_NOT_EXPORTED);
+        }
+
+
+        receiverLockRecentMenu = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                isOverlayMenu = intent.getBooleanExtra("message", false);
+                Log.d("53dsfasf",isOverlayMenu + " ");
+
+//                isOverlayMenu = true;
+            }
+        };
+
+//        IntentFilter filterRecent = new IntentFilter("ACTION_LOCK_RECENT_MENU");
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            // ANDROID 8.0 TRO LEN
+//            registerReceiver(receiverLockCurrent, filterRecent, RECEIVER_EXPORTED);
+//        }
+
     }
+
+
+//    @RequiresApi(api = Build.VERSION_CODES.O)
+//    private void showLockRecentMenu(Context context) {
+//        Button btnClear;
+//        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+//
+//        LayoutInflater layoutInflater = LayoutInflater.from(context);
+//
+//        floatingView = layoutInflater.inflate(R.layout.password_layout_recent, null);
+//
+//        btnClear = floatingView.findViewById(R.id.btnClear);
+//
+//        WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+//        params.gravity = Gravity.CENTER;
+//        // Thêm floatingView vào WindowManager
+//        windowManager.addView(floatingView, params);
+//
+//        btnClear.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Log.d("935793845", "|fsopdfs");
+//            }
+//        });
+//
+//    }
+
 
     @SuppressLint("ForegroundServiceType")
     @Override
@@ -142,15 +282,9 @@ public class LockService extends Service {
 
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intentNotifi, PendingIntent.FLAG_MUTABLE);
 
-
-            Notification notification = new NotificationCompat.Builder(this, CHAINNEL_ID)
-                    .setContentTitle("AppLock")
-                    .setContentText("Protecting your apps")
-                    .setSmallIcon(R.drawable.ic_launcher_background)
-                    .setContentIntent(pendingIntent).build();
+            Notification notification = new NotificationCompat.Builder(this, CHAINNEL_ID).setContentTitle("AppLock").setContentText("Protecting your apps").setSmallIcon(R.drawable.ic_launcher_background).setContentIntent(pendingIntent).build();
 
             startForeground(1, notification);
-
 
         }
 
@@ -169,7 +303,6 @@ public class LockService extends Service {
         });
         thread.start();
 
-
         return START_STICKY;
 
     }
@@ -187,10 +320,28 @@ public class LockService extends Service {
             SharedPreferences sharedPreferences = getSharedPreferences("LockMode", Context.MODE_PRIVATE);
             modeLock = sharedPreferences.getString("lock_mode", "immediately");
 
+            lockRecentMenu = sharedPreferences.getString("lock_recent_menu", "no");
+
+
+            if (lockRecentMenu.equals("yes")) {
+
+                // khi nao thi an
+
+                if (isOverlayMenu) {
+                    Log.d("5385423fsa", "fsafas333");
+                    screenLockRecent.disableOverlay();
+                    isOverlayMenu = false ;
+//                    showOverlayPassWord("","lockRecentMenu");
+//                    isOverlayMenu = true ;
+                    // hiển thị duy nhất 1 lần
+                }
+
+            }
+
+
             long endTime = System.currentTimeMillis();
             long beginTime = endTime - 10000;
             String result = "null";
-
 
             UsageEvents.Event event = new UsageEvents.Event();
             UsageStatsManager sUsageStatsManager = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
@@ -207,23 +358,17 @@ public class LockService extends Service {
             if (modeLock.equals("immediately")) {
 
                 if (database.lockDAO().isPackageLocked(result) != 0) {
-                    showOverlayPassWord(result);
+                    showOverlayPassWord(result, "lockScreenApp");
                 }
 
             } else if (modeLock.equals("screen_off")) {
-                // nó chỉ mở ở chế độ islock thoi mà
-//                if (database.lockDAO().isLockedScreen(result) != 0 ) {
-//                    showOverlayPassWord(result);
-//                }
 
-                Lock lock = database.lockDAO().getLockByPackageName(result);
-                if (lock != null) {
-                    if (lock.isStateLock() && lock.isStateLockScreenOff()) {
-//                        Log.d("sdffsaf385785345",lock.getPackageApp().toString());
-                        showOverlayPassWord(result);
-                    }
+
+                Log.d("wqrfsafa", "ffsafa");
+
+                if (database.lockDAO().isLockedScreen(result) != 0) {
+                    showOverlayPassWord(result, "lockScreenApp");
                 }
-
 
             } else {
 
@@ -237,7 +382,7 @@ public class LockService extends Service {
 
                             // nếu nó đang là true thì show overlay
 
-                            showOverlayPassWord(result);
+                            showOverlayPassWord(result, "lockScreenApp");
 
                         } else if (!lock.isStateLockScreenAfterMinute()) {
                             // false
@@ -261,11 +406,11 @@ public class LockService extends Service {
                                 // nếu đã vượt quá thời gian mở khóa thì khóa nó lại
                                 lock.setStateLockScreenAfterMinute(true);
                                 database.lockDAO().updateLock(lock);
-
                             }
                         }
 
                     } else {
+
                         Log.d("fsadfsda", " -- " + modeLock);
 
                     }
@@ -279,13 +424,9 @@ public class LockService extends Service {
                 // app đó đang bị khóa và mode immediately
 
                 if (currentPackageLock != null && currentPackageLock.length() > 2) {
-                    if (!result.equals(packageTemp)
-                            && !result.equals("null")
-                            && !packageTemp.equals("null")
-                            && !result.equals("com.example.applock")
-                            && !packageTemp.equals("com.example.applock")) {
-                        // chỉ khi nào 2 package khác nhau thi goi laij ham nay
-                        // sau khi check nếu màn hình thay đổi ứng dụng thì khóa lại app đã mở trước đó
+                    if (!result.equals(packageTemp) && !result.equals("null") && !packageTemp.equals("null") && !result.equals("com.example.applock") && !packageTemp.equals("com.example.applock")) {
+
+                        Log.d("5353fsdfdsaf", result);
 
 
                         Lock lock = database.lockDAO().getLockByPackageName(currentPackageLock);
@@ -298,25 +439,16 @@ public class LockService extends Service {
                 }
 
             } else if (modeLock.equals("screen_off")) {
-                // app khoa & mode lock screen
-
-                // currentPackageLock là biến mà bên màn hình overlay sau khi mở khóa thành công trả về thông qua broadcast
-                // nên nó là package của app đang bị khóa
 
                 if (currentPackageLock.trim().length() > 4) {
 
-//                    Log.d("90hfiosf90wur0923r", currentPackageLock);
                     getLockByPackage(currentPackageLock);
-
                     currentPackageLock = "";
-
 
                 }
 
-                // moi truong trong app time open
-
                 if (screenOff) {
-                    // kkhi tắt màn hình thì xét cho tất cả các app đã mở về chế độ khóa lại
+
                     if (!lockAppModeOffScreenList.isEmpty()) {
                         lockListAppOffScreen();
                         screenOff = false;
@@ -332,45 +464,65 @@ public class LockService extends Service {
         }
     }
 
-    private void showOverlayPassWord(String result) throws PackageManager.NameNotFoundException {
+    private void showOverlayPassWord(String result, String lockName) throws PackageManager.NameNotFoundException {
 
-        PackageManager packageManager = getPackageManager();
 
-        ApplicationInfo applicationInfo = packageManager.getApplicationInfo(result, PackageManager.GET_META_DATA);
+        if (lockName.equals("lockScreenApp")) {
+            // send overlay lock screen
 
-        Drawable iconDrawable = applicationInfo.loadIcon(packageManager);
+            PackageManager packageManager = getPackageManager();
 
-        Bitmap bitmap = null;
+            ApplicationInfo applicationInfo = packageManager.getApplicationInfo(result, PackageManager.GET_META_DATA);
 
-        if (iconDrawable instanceof BitmapDrawable) {
-            bitmap = ((BitmapDrawable) iconDrawable).getBitmap();
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (iconDrawable instanceof AdaptiveIconDrawable) {
-                int width = iconDrawable.getIntrinsicWidth();
-                int height = iconDrawable.getIntrinsicHeight();
-                bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(bitmap);
-                iconDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-                iconDrawable.draw(canvas);
-            } else {
-                // Xử lý trường hợp khác nếu cần
-                bitmap = null;
+            Drawable iconDrawable = applicationInfo.loadIcon(packageManager);
+
+            Bitmap bitmap = null;
+
+            if (iconDrawable instanceof BitmapDrawable) {
+                bitmap = ((BitmapDrawable) iconDrawable).getBitmap();
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (iconDrawable instanceof AdaptiveIconDrawable) {
+                    int width = iconDrawable.getIntrinsicWidth();
+                    int height = iconDrawable.getIntrinsicHeight();
+                    bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(bitmap);
+                    iconDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+                    iconDrawable.draw(canvas);
+                } else {
+                    // Xử lý trường hợp khác nếu cần
+                    bitmap = null;
+                }
             }
-        }
 
-        if (bitmap != null) {
+            if (bitmap != null) {
 
 
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 1, baos);
-            byte[] b = baos.toByteArray();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 1, baos);
+                byte[] b = baos.toByteArray();
+
+                Intent intent = new Intent(this, OverlayActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                intent.putExtra("package", result);
+                intent.putExtra("picture", b);
+                intent.putExtra("mode_lock", modeLock);
+
+                intent.putExtra("lock_name", "lockScreenApp");
+
+                startActivity(intent);
+
+            }
+        } else if (lockName.equals("lockRecentMenu")) {
+            // lock recent menu apps
+
 
             Intent intent = new Intent(this, OverlayActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-            intent.putExtra("package", result);
-            intent.putExtra("picture", b);
-            intent.putExtra("mode_lock", modeLock);
+
+            intent.putExtra("lock_name", "lockRecentMenu");
+
             startActivity(intent);
 
         }
@@ -384,7 +536,7 @@ public class LockService extends Service {
 
         Log.d("osdf3rfsadfaf", lockAppModeOffScreenList.size() + " ");
 
-        for (int i = 0 ; i < lockAppModeOffScreenList.size(); i++) {
+        for (int i = 0; i < lockAppModeOffScreenList.size(); i++) {
             Lock lock = lockAppModeOffScreenList.get(i);
             lock.setStateLockScreenOff(true);
             database.lockDAO().updateLock(lock);
@@ -394,14 +546,16 @@ public class LockService extends Service {
 
     }
 
+
+
+
     private void getLockByPackage(String currentLock) {
 
         Lock lock = database.lockDAO().getLockByPackageName(currentLock);
 
         if (lock != null) {
 
-            if(!lockAppModeOffScreenList.contains(lock))
-            {
+            if (!lockAppModeOffScreenList.contains(lock)) {
                 // screenOff la mode tat man hinh de khoa
                 lockAppModeOffScreenList.add(lock);
             }
@@ -469,15 +623,32 @@ public class LockService extends Service {
     }
 
 
-    public class BroadcastActionLockApp extends BroadcastReceiver {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Log.d("095830525fsfsa", "sàadfsf");
-        }
-
-    }
-
+//      class InnerReceiver extends BroadcastReceiver {
+//        final String SYSTEM_DIALOG_REASON_KEY = "reason";
+//        final String SYSTEM_DIALOG_REASON_RECENT_APPS = "recentapps";
+//        final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
+//
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//
+//            Log.d("r590wrsfas","hofsadfameee");
+//
+//
+//            if (intent.getAction().equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
+//                String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
+//                if (reason != null) {
+//                        if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
+//                            Log.d("r590wrsfas","homeee");
+//                            // Home Button click
+//                        } else if (reason.equals(SYSTEM_DIALOG_REASON_RECENT_APPS)) {
+//                            Log.d("r590wrsfas","recent");
+//
+//                            // RecentApp or Overview Button click
+//                        }
+//                }
+//            }
+//        }
+//    }
 
 //
 //    public void scheduleLock(int minutes) {

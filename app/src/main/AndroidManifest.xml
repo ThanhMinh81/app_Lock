@@ -69,13 +69,6 @@
         </activity>
 
 
-        <receiver android:name=".service.LockService$BroadcastActionLockApp"
-            android:exported="true"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="ACTION_LOCK_APP"/>
-            </intent-filter>
-        </receiver>
 
 
 <!--        <receiver android:name=".ScreenReceiver"-->

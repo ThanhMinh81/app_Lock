@@ -1,5 +1,6 @@
 package com.example.applock.fragment;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -8,8 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,18 +46,19 @@ public class SettingFragment extends Fragment {
     String changePattern = "";
 
     RelativeLayout layoutChangePin;
-    private String changePin = "";
+    String changePin = "";
 
-    private TextView tvPin;
+    TextView tvPin;
 
-    private TextView tvTitleDialog, tvCancel, tvCurrentModeLock;
-    private MaterialButton btnCheck, btnClear;
+    TextView tvTitleDialog, tvCancel, tvCurrentModeLock;
+    MaterialButton btnCheck, btnClear;
+    ImageView selectFingerUnlock;
 
     Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
-    private View dialogPattern;
+    View dialogPattern;
     int count = 0;
     ImageView imgChangeSuccess;
-    private TableLayout tableLayoutChangePin;
+    TableLayout tableLayoutChangePin;
     LinearLayout layoutRelockApp;
 
     // hiển thị thời gian khóa app
@@ -66,16 +66,18 @@ public class SettingFragment extends Fragment {
 
     // hien thi text mode hien tai
     String lockModeCurrent = "";
-
-    CheckBox cbUnlockFinger ;
-
-    SharedPreferences modeLockSpf ;
-
-    RelativeLayout layoutFingerPrint ;
+    CheckBox cbFingerPrint;
+    SharedPreferences modeLockSpf;
+    RelativeLayout layoutFingerPrint;
+    ImageView imgSettingFinger;
+    SharedPreferences sharedPreferencesPassword;
+    RelativeLayout layoutLockRecent;
+    CheckBox cbLockRecentMenu;
 
     public SettingFragment() {
     }
 
+    @SuppressLint({"UseCompatLoadingForDrawables", "CutPasteId"})
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -84,37 +86,12 @@ public class SettingFragment extends Fragment {
 
         layoutChangePattern = view.findViewById(R.id.layout_change_pattern);
 
-        layoutChangePin = view.findViewById(R.id.layout_change_pin);
-        layoutRelockApp = view.findViewById(R.id.layout_relockApp);
-        tvCurrentModeLock = view.findViewById(R.id.tvCurrentModeLock);
-        cbUnlockFinger = view.findViewById(R.id.cbUnlockFingerPassword);
-        layoutFingerPrint = view.findViewById(R.id.layoutFingerPrint);
-
-        modeLockSpf = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
-        lockModeCurrent = modeLockSpf.getString("lock_mode", "immediately");
-
-        if (lockModeCurrent.equals("immediately")) {
-            tvCurrentModeLock.setText("Immediately");
-        } else if (lockModeCurrent.equals("screen_off")) {
-            tvCurrentModeLock.setText("After screen off");
-        } else {
-            tvCurrentModeLock.setText(lockModeCurrent + " minute");
-            minuteLock = lockModeCurrent ;
-        }
+        sharedPreferencesPassword = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferencesPassword.edit();
 
 
-        cbUnlockFinger.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                if(isChecked)
-                {
-                    SharedPreferences.Editor editFinger  = modeLockSpf.edit();
-                    editFinger.putString("finger_print","yes");
-                    editFinger.apply();
-                }else {
-                    SharedPreferences.Editor editFinger  = modeLockSpf.edit();
-                    editFinger.putString("finger_print","no");
-                    editFinger.apply();
-                }
-        });
+        initView();
+
 
         layoutChangePattern.setOnClickListener(v -> {
             showDialogChangePattern();
@@ -127,27 +104,217 @@ public class SettingFragment extends Fragment {
             showDialogRelockApp();
         });
 
-        layoutFingerPrint.setOnClickListener(v -> {
+        cbFingerPrint.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
 
-             boolean checkFinger = isFingerprintRegistered(getContext());
-             if(!checkFinger)
-             {
-                 showDialogEnableFinger();
+                SharedPreferences.Editor editorFinger = modeLockSpf.edit();
 
-//                 Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
-//                 getContext().startActivity(intent);
+                editorFinger.putString("finger_print", "yes");
+                // add finger unlock
+                editor.apply();
+            } else {
+                SharedPreferences.Editor editorFinger = modeLockSpf.edit();
+                editorFinger.putString("finger_print", "no");
+                editorFinger.putString("unlock_only_finger", "no");
 
-             }
-
-
-
+                editor.apply();
+            }
         });
 
+
+        handleEventClick();
 
         return view;
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private void handleEventClick() {
+
+        layoutFingerPrint.setOnClickListener(v -> {
+
+            boolean checkFinger = isFingerprintRegistered(getContext());
+
+            if (!checkFinger) {
+                // show dialog register finger
+                showDialogEnableFinger();
+
+            } else {
+
+                boolean check = cbFingerPrint.isChecked();
+
+                if (check) {
+                    cbFingerPrint.setChecked(false);
+                } else {
+                    cbFingerPrint.setChecked(true);
+                }
+
+                if (cbFingerPrint.isChecked()) {
+                    selectFingerUnlock.setImageDrawable(getResources().getDrawable(R.drawable.ic_setting_selectfinger, null));
+                } else {
+                    selectFingerUnlock.setImageDrawable(getResources().getDrawable(R.drawable.ic_setting_finger, null));
+                }
+
+            }
+        });
+
+        cbFingerPrint.setOnClickListener(v -> {
+            if (cbFingerPrint.isChecked()) {
+                selectFingerUnlock.setImageDrawable(getResources().getDrawable(R.drawable.ic_setting_selectfinger, null));
+
+            } else {
+                selectFingerUnlock.setImageDrawable(getResources().getDrawable(R.drawable.ic_setting_finger, null));
+
+            }
+        });
+
+        selectFingerUnlock.setOnClickListener(v -> {
+            if (cbFingerPrint.isChecked()) {
+                showDialogUnlockOnlyFinger();
+            }
+        });
+
+
+        cbLockRecentMenu.setOnCheckedChangeListener((buttonView, isChecked) -> {
+
+            SharedPreferences.Editor editorRecent = modeLockSpf.edit();
+
+            if (isChecked) {
+                editorRecent.putString("lock_recent_menu", "yes");
+                editorRecent.apply();
+            } else {
+                editorRecent.putString("lock_recent_menu", "no");
+                editorRecent.apply();
+            }
+        });
+
+
+        layoutLockRecent.setOnClickListener(v -> {
+
+            SharedPreferences.Editor editorFinger = modeLockSpf.edit();
+
+            boolean check = cbLockRecentMenu.isChecked();
+
+            if (cbLockRecentMenu.isChecked()) {
+                editorFinger.putString("lock_recent_menu", "no");
+                cbLockRecentMenu.setChecked(false);
+
+            } else {
+
+                editorFinger.putString("lock_recent_menu", "yes");
+                cbLockRecentMenu.setChecked(true);
+
+            }
+
+
+        });
+
+    }
+
+    @SuppressLint("CutPasteId")
+    private void initView() {
+
+        layoutChangePin = view.findViewById(R.id.layout_change_pin);
+        layoutRelockApp = view.findViewById(R.id.layout_relockApp);
+        tvCurrentModeLock = view.findViewById(R.id.tvCurrentModeLock);
+        cbFingerPrint = view.findViewById(R.id.cbUnlockFingerPassword);
+        layoutFingerPrint = view.findViewById(R.id.layoutUsegingerPrintUnlock);
+        selectFingerUnlock = view.findViewById(R.id.selectFingerUnlock);
+        imgSettingFinger = view.findViewById(R.id.selectFingerUnlock);
+        layoutLockRecent = view.findViewById(R.id.layout_lock_recentmenu);
+        cbLockRecentMenu = view.findViewById(R.id.cb_lock_recent);
+
+        modeLockSpf = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
+        lockModeCurrent = modeLockSpf.getString("lock_mode", "immediately");
+
+        if (modeLockSpf.getString("lock_recent_menu", "no").equals("yes")) {
+            cbLockRecentMenu.setChecked(true);
+        }
+
+
+        if (lockModeCurrent.equals("immediately")) {
+            tvCurrentModeLock.setText("Immediately");
+        } else if (lockModeCurrent.equals("screen_off")) {
+            tvCurrentModeLock.setText("After screen off");
+        } else {
+            tvCurrentModeLock.setText(lockModeCurrent + " minute");
+            minuteLock = lockModeCurrent;
+        }
+
+        if (modeLockSpf.getString("finger_print", "no").equals("yes")) {
+            cbFingerPrint.setChecked(true);
+            selectFingerUnlock.setImageDrawable(getResources().getDrawable(R.drawable.ic_setting_selectfinger, null));
+
+        } else {
+            cbFingerPrint.setChecked(true);
+            selectFingerUnlock.setImageDrawable(getResources().getDrawable(R.drawable.ic_setting_selectfinger, null));
+
+        }
+
+    }
+
+    private void showDialogUnlockOnlyFinger() {
+
+
+        SharedPreferences.Editor editorFinger = modeLockSpf.edit();
+
+
+        MaterialButton btnCancel, btnOk;
+        CheckBox cbFingerUnlock;
+        LinearLayout layoutOnlyFinger;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.MyDialogTheme);
+        LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
+        dialogPattern = layoutInflater.inflate(R.layout.dialog_fingerprint_unlock, null);
+
+        builder.setView(dialogPattern);
+        AlertDialog dialog = builder.create();
+        Window window = dialog.getWindow();
+        WindowManager.LayoutParams params = window.getAttributes();
+
+        btnCancel = dialogPattern.findViewById(R.id.btnCancelFinger);
+        btnOk = dialogPattern.findViewById(R.id.btnOkFinger);
+        cbFingerUnlock = dialogPattern.findViewById(R.id.cbFingerUnlock);
+
+        layoutOnlyFinger = dialogPattern.findViewById(R.id.layoutOnlyFinger);
+
+        dialog.setCanceledOnTouchOutside(true);
+        dialog.setCancelable(true);
+
+
+        params.gravity = Gravity.CENTER;
+
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
+
+        if (modeLockSpf.getString("unlock_only_finger", "no").equals("yes")) {
+            cbFingerUnlock.setChecked(true);
+        }
+
+        dialog.show();
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+
+        btnOk.setOnClickListener(v -> {
+            if (cbFingerUnlock.isChecked()) {
+
+                editorFinger.putString("unlock_only_finger", "yes");
+                editorFinger.apply();
+                dialog.dismiss();
+
+            } else {
+
+                editorFinger.putString("unlock_only_finger", "no");
+                editorFinger.apply();
+                dialog.dismiss();
+
+            }
+        });
+
+
+    }
+
     private void showDialogEnableFinger() {
+
+        MaterialButton btnSetting;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.MyDialogTheme);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
@@ -157,13 +324,21 @@ public class SettingFragment extends Fragment {
         AlertDialog dialog = builder.create();
         Window window = dialog.getWindow();
         WindowManager.LayoutParams params = window.getAttributes();
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
-// Set gravity to center
+        btnSetting = dialogPattern.findViewById(R.id.btnSettingFinger);
+
         params.gravity = Gravity.CENTER;
 
         window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
 
         dialog.show();
+
+        btnSetting.setOnClickListener(v -> {
+            Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
+            getContext().startActivity(intent);
+        });
 
 
     }
@@ -182,16 +357,16 @@ public class SettingFragment extends Fragment {
         // mac dinh la immediately
         lockModeCurrent = modeLock.getString("lock_mode", "immediately");
 
-        if (!lockModeCurrent.equals("immediately") && !lockModeCurrent.equals("screen_off"))
-        {
-            minuteLock = lockModeCurrent ;
-        }else {
+        if (!lockModeCurrent.equals("immediately") && !lockModeCurrent.equals("screen_off")) {
+            minuteLock = lockModeCurrent;
+        } else {
             minuteLock = String.valueOf(1);
         }
 
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.MyDialogTheme);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
-        dialogPattern = layoutInflater.inflate(R.layout.relock_dialog_layout, null);
+        dialogPattern = layoutInflater.inflate(R.layout.dialog_relock_layout, null);
         rbImedia = dialogPattern.findViewById(R.id.rb_immedia);
         rbScreenOff = dialogPattern.findViewById(R.id.rbScreenOff);
         rbAfterMinute = dialogPattern.findViewById(R.id.rbAfterMinute);
@@ -276,7 +451,6 @@ public class SettingFragment extends Fragment {
                 rbScreenOff.setChecked(false);
                 rbAfterMinute.setChecked(true);
 
-                Log.d("5903709423fs", progress + " ");
                 tvMinute.setText(String.valueOf(progress));
                 minuteLock = String.valueOf(progress);
 
@@ -309,8 +483,6 @@ public class SettingFragment extends Fragment {
 
                 editor.apply();
             } else if (rbAfterMinute.isChecked()) {
-
-                Log.d("23434544545", minuteLock + " ");
 
                 editor.putString("lock_mode", minuteLock);
                 tvCurrentModeLock.setText(String.valueOf(minuteLock) + " minute");
@@ -399,9 +571,8 @@ public class SettingFragment extends Fragment {
                         tableLayoutChangePin.setVisibility(View.GONE);
                         tvCancel.setText("OK");
 
-                        SharedPreferences createPassword = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
 
-                        SharedPreferences.Editor editor = createPassword.edit();
+                        SharedPreferences.Editor editor = sharedPreferencesPassword.edit();
 
                         editor.putString("password_pin", tvPin.getText().toString());
 
@@ -425,7 +596,6 @@ public class SettingFragment extends Fragment {
                         tvPin.setText("");
                         tvTitleDialog.setText("Pin does not match , Enter Pin Again");
                         count = 0;
-
 
                     }
                 }
@@ -472,7 +642,6 @@ public class SettingFragment extends Fragment {
     }
 
     private void initViewDialog() {
-
         tvTitleDialog = dialogPattern.findViewById(R.id.tvTitleDialog);
         tvCancel = dialogPattern.findViewById(R.id.tvCancel);
         tvPin = dialogPattern.findViewById(R.id.tvPassword);
@@ -493,7 +662,6 @@ public class SettingFragment extends Fragment {
 
     public void onClickChangePin(View view) {
         Button button = (Button) view;
-//        Log.d("fsdfas",button.getText().toString());
         String currentText = tvPin.getText().toString();
         String buttonText = button.getText().toString();
         String updatedText = currentText + buttonText;
@@ -559,9 +727,7 @@ public class SettingFragment extends Fragment {
                         mPatternLockView.setVisibility(View.GONE);
                         img_state_pattern.setVisibility(View.VISIBLE);
 
-                        SharedPreferences createPassword = getContext().getSharedPreferences("PREFS", Context.MODE_PRIVATE);
-
-                        SharedPreferences.Editor editor = createPassword.edit();
+                        SharedPreferences.Editor editor = sharedPreferencesPassword.edit();
 
                         editor.putString("password_pattern", PatternLockUtils.patternToString(mPatternLockView, pattern));
 
@@ -591,7 +757,6 @@ public class SettingFragment extends Fragment {
 
             @Override
             public void onCleared() {
-                Log.d("0sdfsafsa", "CLAERRRRR");
             }
         });
 
@@ -619,7 +784,7 @@ public class SettingFragment extends Fragment {
 
     // Kiểm tra xem người dùng đã đăng ký vân tay hay chưa
     // nếu người dùng chưa đăng ký vân tay thì intent đăng ký
-    public   boolean isFingerprintRegistered(Context context) {
+    public boolean isFingerprintRegistered(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             FingerprintManager fingerprintManager = context.getSystemService(FingerprintManager.class);
             if (fingerprintManager != null && fingerprintManager.hasEnrolledFingerprints()) {
@@ -633,8 +798,6 @@ public class SettingFragment extends Fragment {
         }
         return false;
     }
-
-
 
 
 }

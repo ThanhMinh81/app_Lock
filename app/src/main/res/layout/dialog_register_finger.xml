@@ -1,35 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:padding="10dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp"
     android:orientation="vertical"
-    android:layout_height="wrap_content">
-
-     <TextView
-         android:layout_marginTop="7dp"
-         android:layout_marginBottom="10dp"
-         android:textSize="18sp"
-         android:textStyle="bold"
-         android:textColor="@color/black"
-         android:text="@string/txt_register_finger"
-         android:layout_width="wrap_content"
-         android:layout_height="wrap_content"/>
+    android:padding="20dp">
 
     <TextView
-        android:layout_marginBottom="10dp"
-        android:textSize="13sp"
-        android:text="@string/txt_context_regisfinger"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/txt_register_finger"
+        android:textColor="@color/black"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:textColor="#7f8c8d"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="@string/txt_context_regisfinger"
+        android:textSize="16sp" />
 
     <com.google.android.material.button.MaterialButton
-        app:cornerRadius="4dp"
-        android:textSize="13sp"
-        android:minHeight="40dp"
-        app:backgroundTint="#00a8ff"
+        android:id="@+id/btnSettingFinger"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="45dp"
+        android:layout_marginTop="10dp"
         android:text="@string/txt_btn_setting"
-        android:layout_height="wrap_content"/>
+        android:textSize="15sp"
+        app:backgroundTint="@color/bg_btn"
+        app:cornerRadius="4dp" />
 
 </LinearLayout>
