@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,11 +12,14 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TextView;
+
+import androidx.annotation.RequiresApi;
 
 import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
@@ -35,34 +39,62 @@ public class ScreenLockRecent {
     private WindowManager.LayoutParams params;
     private Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0, btnClear;
 
-    private TextView tvPin , tvNameMode;
+    private TextView tvPin, tvNameMode;
 
-    private   TableLayout tableLayout;
+    private TableLayout tableLayout;
     private PatternLockView patternLockView;
 
-    private ImageView imgChangeMode ;
+    private ImageView imgChangeMode;
 
-    private  boolean patternMode = true;
+    private boolean patternMode = true;
 
     private String passwordPattern;
 
     String passwordPin;
 
-    UnlockRecentMenu unlockRecentMenu ;
+    UnlockRecentMenu unlockRecentMenu;
+
+    boolean isViewAdded = false;
 
 
-    public ScreenLockRecent(Context context ,   UnlockRecentMenu unlockRecentMenu) {
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public ScreenLockRecent(Context context, UnlockRecentMenu unlockRecentMenu) {
         this.context = context;
-        this.unlockRecentMenu  = unlockRecentMenu ;
+        this.unlockRecentMenu = unlockRecentMenu;
 //            Log.d("5309fsfsdaf","fasfa");
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
 
+        isViewAdded = false;
+
         LayoutInflater layoutInflater = LayoutInflater.from(context);
+
 
         floatingView = layoutInflater.inflate(R.layout.password_layout_recent, null);
 
-        params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
+
+        params = new WindowManager.LayoutParams(
+                WindowManager.LayoutParams.MATCH_PARENT,
+                WindowManager.LayoutParams.MATCH_PARENT,
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
+                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
+                        WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
+                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                        | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                        | WindowManager.LayoutParams.FLAG_FULLSCREEN
+                        |WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
+                PixelFormat.TRANSLUCENT);
+
+
+        params.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+
+
         params.gravity = Gravity.CENTER;
+
+
+
 
         initView();
         handleEventUnlock();
@@ -144,20 +176,7 @@ public class ScreenLockRecent {
 
     private void confirmSuccess() {
 
-        unlockRecentMenu.unlockSs(true);
-
-//            try {
-//                Log.d("53dsfasf", "fasfsadfa ");
-//                Intent intent = new Intent("ACTION_LOCK_RECENT_MENU");
-//                intent.putExtra("message", true);
-//
-//                context.sendBroadcast(intent);
-//
-//            }catch (Exception e)
-//            {
-//                Log.d("53dsfasf",e + " ");
-//
-//            }
+        unlockRecentMenu.unlockSs(false);
 
     }
 
@@ -165,12 +184,9 @@ public class ScreenLockRecent {
 
         SharedPreferences sharedPreferences = context.getSharedPreferences("PREFS", Context.MODE_PRIVATE);
         passwordPattern = sharedPreferences.getString("password_pattern", "null");
-//        if(passwordPattern != null)
-//        {
-//            Log.d("53dsfasf","fasfda");
-//        }
-        passwordPin = sharedPreferences.getString("password_pin", "null");
 
+
+        passwordPin = sharedPreferences.getString("password_pin", "null");
 
         tableLayout = floatingView.findViewById(R.id.tableLayout);
         tableLayout.setVisibility(View.GONE);
@@ -248,13 +264,17 @@ public class ScreenLockRecent {
 
     }
 
-    public void showScreenPassword(){
+    public void showScreenPassword() {
 
-        Log.d("5023fasfasd","dsafafa");
+        Log.d("5023fasfasd", "dsafafa");
 
         // Thêm floatingView vào WindowManager
-        windowManager.addView(floatingView, params);
-        btnClear = floatingView.findViewById(R.id.btnClear);
+        if (!isViewAdded) {
+            windowManager.addView(floatingView, params);
+            btnClear = floatingView.findViewById(R.id.btnClear);
+            isViewAdded = true;
+        }
+
 
         btnClear.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -289,13 +309,14 @@ public class ScreenLockRecent {
     // hide screen overlay
 
     public void disableOverlay() {
-        if (floatingView != null && floatingView.isAttachedToWindow() && isViewAttachedToWindow(floatingView)) {
-            windowManager.removeView(floatingView);
-            floatingView = null;
-        }
+
+
+        windowManager.removeView(floatingView);
+        floatingView = null;
+        isViewAdded = false;
+
 
     }
-
 
     // check xem windownmanager overlay con hien thi hay ko
     // tra ve true neu no con
@@ -307,7 +328,6 @@ public class ScreenLockRecent {
             return false;
         }
     }
-
 
 
 }

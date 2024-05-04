@@ -72,7 +72,7 @@ public class LockService extends Service {
     boolean screenOff = false;
     ArrayList<Lock> lockAppModeOffScreenList;
 
-    ScreenLockRecent screenLockRecent ;
+    ScreenLockRecent screenLockRecent;
 
     final String SYSTEM_DIALOG_REASON_KEY = "reason";
 //    final String SYSTEM_DIALOG_REASON_RECENT_APPS = "recentapps";
@@ -93,8 +93,8 @@ public class LockService extends Service {
     public BroadcastReceiver broadcastReceiver;
 
 
-    UnlockRecentMenu unlockRecentMenu ;
-
+    UnlockRecentMenu unlockRecentMenu;
+    boolean isCheckShowOverlayRecent = false;
 
 
     @Override
@@ -103,13 +103,13 @@ public class LockService extends Service {
         unlockRecentMenu = new UnlockRecentMenu() {
             @Override
             public void unlockSs(boolean unlock) {
-                isOverlayMenu = unlock ;
+                isOverlayMenu = unlock;
             }
         };
 
         lockAppModeOffScreenList = new ArrayList<>();
 
-            screenLockRecent = new ScreenLockRecent(getApplicationContext() , unlockRecentMenu);
+        screenLockRecent = new ScreenLockRecent(getApplicationContext(), unlockRecentMenu);
 
 
         HandlerThread handlerThread = new HandlerThread("MyHandlerThread");
@@ -132,7 +132,6 @@ public class LockService extends Service {
     @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
     private void initBroadCast() {
 
-
         receiverLockCurrent = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -141,6 +140,7 @@ public class LockService extends Service {
                 currentPackageLock = message;
 
             }
+
         };
 
         IntentFilter filter = new IntentFilter("ACTION_LOCK_APP");
@@ -152,7 +152,7 @@ public class LockService extends Service {
 
         //== broadcast screen ==
 
-        // lang nghe on offf screeeen
+        // lang nghe on off screeeen
         screenReceiverOn = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -170,6 +170,9 @@ public class LockService extends Service {
 
 //        ============== receiver press recent =====================
 
+        // hiển thị khi người dùng bấm recent
+        // không hiển thị khi broadcast trả về true
+
         IntentFilter intentFilterACSD = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
 
         broadcastReceiver = new BroadcastReceiver() {
@@ -183,38 +186,34 @@ public class LockService extends Service {
                         if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                              if(screenLockRecent != null)
-                              {
-                                  screenLockRecent.disableOverlay();
-                                  screenLockRecent = null ;
-                              }
+                                if (screenLockRecent != null) {
+
+                                        Log.d("30597325", "e.toString()");
+                                        screenLockRecent.disableOverlay();
+                                        screenLockRecent = null;
+
+                                }
                             }
 
                         } else if (reason.trim().equals("recentapps")) {
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-                                  if(screenLockRecent == null)
-                                  {
-                                      screenLockRecent = new ScreenLockRecent(getApplicationContext() , unlockRecentMenu);
-                                  }
-                                  // hiển thị rồi hiển thị tiếp crash
+                                if (screenLockRecent == null) {
+                                    Log.d("45fsdfa","sdfsaf333");
 
+                                    screenLockRecent = new ScreenLockRecent(getApplicationContext(), unlockRecentMenu);
+                                    screenLockRecent.showScreenPassword();
+                                }
 
-                                    if (screenLockRecent.floatingView != null  && !isOverlayMenu)
-                                    {
-                                        if(!screenLockRecent.isViewAttachedToWindow(screenLockRecent.floatingView))
-                                        {
-                                            Log.d("40935u7235325","fsadfasdfaf");
-                                            screenLockRecent.showScreenPassword();
-                                        }
-                                    }else {
-                                         if(!isOverlayMenu){
-                                             screenLockRecent.showScreenPassword();
-                                         }
+                                if (screenLockRecent != null) {
+                                    Log.d("45fsdfa","sdfsaf");
+                                    if (!screenLockRecent.isViewAttachedToWindow(screenLockRecent.floatingView)) {
+                                        screenLockRecent.showScreenPassword();
                                     }
-                            }
+                                }
 
+                            }
                         }
                     }
                 }
@@ -230,45 +229,13 @@ public class LockService extends Service {
             @Override
             public void onReceive(Context context, Intent intent) {
                 isOverlayMenu = intent.getBooleanExtra("message", false);
-                Log.d("53dsfasf",isOverlayMenu + " ");
+                Log.d("53dsfasf", isOverlayMenu + " ");
 
-//                isOverlayMenu = true;
             }
         };
 
-//        IntentFilter filterRecent = new IntentFilter("ACTION_LOCK_RECENT_MENU");
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            // ANDROID 8.0 TRO LEN
-//            registerReceiver(receiverLockCurrent, filterRecent, RECEIVER_EXPORTED);
-//        }
 
     }
-
-
-//    @RequiresApi(api = Build.VERSION_CODES.O)
-//    private void showLockRecentMenu(Context context) {
-//        Button btnClear;
-//        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-//
-//        LayoutInflater layoutInflater = LayoutInflater.from(context);
-//
-//        floatingView = layoutInflater.inflate(R.layout.password_layout_recent, null);
-//
-//        btnClear = floatingView.findViewById(R.id.btnClear);
-//
-//        WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, PixelFormat.TRANSLUCENT);
-//        params.gravity = Gravity.CENTER;
-//        // Thêm floatingView vào WindowManager
-//        windowManager.addView(floatingView, params);
-//
-//        btnClear.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Log.d("935793845", "|fsopdfs");
-//            }
-//        });
-//
-//    }
 
 
     @SuppressLint("ForegroundServiceType")
@@ -321,23 +288,6 @@ public class LockService extends Service {
             modeLock = sharedPreferences.getString("lock_mode", "immediately");
 
             lockRecentMenu = sharedPreferences.getString("lock_recent_menu", "no");
-
-
-            if (lockRecentMenu.equals("yes")) {
-
-                // khi nao thi an
-
-                if (isOverlayMenu) {
-                    Log.d("5385423fsa", "fsafas333");
-                    screenLockRecent.disableOverlay();
-                    isOverlayMenu = false ;
-//                    showOverlayPassWord("","lockRecentMenu");
-//                    isOverlayMenu = true ;
-                    // hiển thị duy nhất 1 lần
-                }
-
-            }
-
 
             long endTime = System.currentTimeMillis();
             long beginTime = endTime - 10000;
@@ -547,8 +497,6 @@ public class LockService extends Service {
     }
 
 
-
-
     private void getLockByPackage(String currentLock) {
 
         Lock lock = database.lockDAO().getLockByPackageName(currentLock);
@@ -616,54 +564,11 @@ public class LockService extends Service {
 
     @Override
     public void onDestroy() {
-//        // Hủy đăng ký BroadcastReceiver khi Service bị hủy
+        unregisterReceiver(receiverLockRecentMenu);
         unregisterReceiver(receiverLockCurrent);
         unregisterReceiver(screenReceiverOn);
         super.onDestroy();
     }
-
-
-//      class InnerReceiver extends BroadcastReceiver {
-//        final String SYSTEM_DIALOG_REASON_KEY = "reason";
-//        final String SYSTEM_DIALOG_REASON_RECENT_APPS = "recentapps";
-//        final String SYSTEM_DIALOG_REASON_HOME_KEY = "homekey";
-//
-//        @Override
-//        public void onReceive(Context context, Intent intent) {
-//
-//            Log.d("r590wrsfas","hofsadfameee");
-//
-//
-//            if (intent.getAction().equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
-//                String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
-//                if (reason != null) {
-//                        if (reason.equals(SYSTEM_DIALOG_REASON_HOME_KEY)) {
-//                            Log.d("r590wrsfas","homeee");
-//                            // Home Button click
-//                        } else if (reason.equals(SYSTEM_DIALOG_REASON_RECENT_APPS)) {
-//                            Log.d("r590wrsfas","recent");
-//
-//                            // RecentApp or Overview Button click
-//                        }
-//                }
-//            }
-//        }
-//    }
-
-//
-//    public void scheduleLock(int minutes) {
-//
-//        counterTimeAlarm = true ;
-//
-//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//        Intent alarmIntent = new Intent(this, MyAlarmReceiver.class);
-//        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, alarmIntent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE );
-//
-//        long interval = (long) minutes * 60 * 1000;
-//
-//        alarmManager.setInexactRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + interval, interval, pendingIntent);
-//
-//    }
 
 
 }

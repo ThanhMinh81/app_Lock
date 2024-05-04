@@ -24,6 +24,8 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -79,11 +81,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @SuppressLint("ScheduleExactAlarm")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
         EdgeToEdge.enable(this);
 
         setContentView(R.layout.activity_main);
+
 
         pref = MainActivity.this.getSharedPreferences("PREFS", 0);
 
@@ -110,6 +114,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 //         boolean checkFinger = isFingerprintAuthAvailable(this);
 //        boolean enableFinger = isFingerprintRegistered(this);
 //        Log.d("dpfupsadpsaf",checkFinger + "  ==  " + enableFinger );
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+                WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+
+        Window window = getWindow();
+        WindowManager.LayoutParams winParams = window.getAttributes();
+        winParams.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        window.setAttributes(winParams);
+        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
 
 
         //========================//
@@ -188,23 +202,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
-
-
-
-
-//        spinnerSelected.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                ((TextView) view).setTextColor(Color.WHITE);
-//                ((TextView) view).setTextSize(18);
-//
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//
-//            }
-//        });
 
         int appBarPadding = getResources().getDimensionPixelSize(R.dimen.app_bar_padding);
         int menuItemSize = getResources().getDimensionPixelSize(R.dimen.app_bar_size_menu_item);
