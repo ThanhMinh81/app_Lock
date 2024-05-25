@@ -30,4 +30,11 @@ public interface LockDAO {
     @Query("SELECT * FROM lockApps WHERE packageApp = :packageName LIMIT 1")
     Lock getLockByPackageName(String packageName);
 
+    @Query("SELECT * FROM lockApps WHERE stateLockScreenOff = 1")
+    List<Lock> getListLockApps();
+
+    @Query("SELECT * FROM lockApps WHERE stateLockScreenOff = 0")
+    List<Lock> getListUnLockApps();
+
+
 }

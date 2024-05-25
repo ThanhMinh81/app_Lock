@@ -12,12 +12,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.applock.Interface.ItemClickListenerLock;
+import com.example.applock.Interface.ItemClickListenerPackage;
 import com.example.applock.R;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.model.Lock;
 
-import java.nio.file.attribute.FileAttribute;
 import java.util.ArrayList;
 
 public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
@@ -27,10 +26,13 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
 
     private LockDatabase lockDatabase;
 
-    public HomeAdapter(Context context, ArrayList<Lock> locks, LockDatabase lockDatabase) {
+    private ItemClickListenerPackage itemClickListenerPackage;
+
+    public HomeAdapter(Context context, ArrayList<Lock> locks, LockDatabase lockDatabase , ItemClickListenerPackage itemClickListenerPackage) {
         this.context = context;
         this.locks = locks;
         this.lockDatabase = lockDatabase;
+        this.itemClickListenerPackage = itemClickListenerPackage;
     }
 
     @NonNull
@@ -57,9 +59,9 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
         }
 
         if (lock.isStateLock()) {
-            holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable._669338_lock_ic_icon, null));
+            holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_lock, null));
         }else {
-            holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_lock_circle, null));
+            holder.imgClock.setImageDrawable(context.getResources().getDrawable(R.drawable.ic_unlock, null));
         }
 
         holder.imgClock.setOnClickListener(v -> {
@@ -76,6 +78,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
                 if (updateState != 0) {
                     locks.set(position, lock);
                     notifyItemChanged(position);
+                    itemClickListenerPackage.updatePackage();
                 }
             } else {
                 // them vao lock
@@ -88,9 +91,9 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder> {
                 if (updateState != 0) {
                     locks.set(position, lock);
                     notifyItemChanged(position);
-                }
+                    itemClickListenerPackage.updatePackage();
 
-                Log.d("532523fasdf",updateState  + " ");
+                }
 
             }
         });

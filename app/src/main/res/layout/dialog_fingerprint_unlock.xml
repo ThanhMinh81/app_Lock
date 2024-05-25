@@ -34,12 +34,11 @@
             android:textSize="18sp"
             android:textColor="#7f8c8d"
             android:text="Use only Fingerprint To Unlock"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"/>
 
         <CheckBox
             android:id="@+id/cbFingerUnlock"
-            android:layout_weight="1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
@@ -50,33 +49,34 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.button.MaterialButton
-            android:layout_weight="1"
+        <Button
             android:id="@+id/btnCancelFinger"
-            android:text="@string/txt_cancel_button"
-            app:cornerRadius="2dp"
-            android:textSize="13sp"
-            android:minHeight="45dp"
-            android:layout_marginEnd="10dp"
-            app:backgroundTint="#7f8fa6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
-
-
-        <com.google.android.material.button.MaterialButton
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
-            android:layout_marginStart="10dp"
+            android:background="@color/bg_toolbar"
+            android:backgroundTint="#636e72"
+            android:textSize="12dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:layout_marginRight="10dp"
+            android:text="cancle" />
+
+        <Button
+            android:layout_marginLeft="10dp"
+            android:textSize="12dp"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_weight="1"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:padding="10dp"
             android:id="@+id/btnOkFinger"
             android:text="@string/txt_ok_button"
-            android:minHeight="45dp"
-            app:cornerRadius="2dp"
-            android:textSize="13sp"
-            app:backgroundTint="#00a8ff"
-            android:layout_width="wrap_content"
+            android:background="@color/bg_btn"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"/>
 
-
     </LinearLayout>
-
 
 </LinearLayout>

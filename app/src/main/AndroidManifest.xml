@@ -2,6 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <uses-permission android:name="android.permission.ACTION_MANAGE_OVERLAY_PERMISSION" />
     <uses-permission android:name="android.permission.GET_TASKS" />
@@ -12,11 +17,10 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
-
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"  tools:ignore="QueryAllPackagesPermission" />
-
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -43,6 +47,7 @@
             android:name=".service.LockService"
             android:enabled="true"
             android:exported="true"
+            android:stopWithTask="false"
             android:foregroundServiceType="dataSync" />
 
         <activity
@@ -67,20 +72,6 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-
-
-
-
-<!--        <receiver android:name=".ScreenReceiver"-->
-<!--            android:exported="true"-->
-<!--            android:enabled="true">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.intent.action.AIRPLANE_MODE"/>-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
-
-<!--        <receiver android:name=".MyAlarmReceiver"  android:exported="true"-->
-<!--            android:enabled="true"/>-->
 
     </application>
 

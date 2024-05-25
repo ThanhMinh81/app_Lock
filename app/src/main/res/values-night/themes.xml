@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.AppLock2" parent="Theme.AppCompat.DayNight">
+    <style name="Base.Theme.AppLock2" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:textColorPrimary">@android:color/white</item>
 
         <!-- Customize your dark theme here. -->

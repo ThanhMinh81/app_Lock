@@ -1,13 +1,29 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="Base.Theme.AppLock" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.AppLock" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowBackground">@color/white</item>
 
     </style>
 
-
-    <style name="MyMaterialButton" parent="Theme.AppCompat.Light">
-
+    <style name="checkBoxStyleCustom" parent="Base.Theme.AppCompat">
+        <item name="colorAccent">#00C0FF</item>
+        <item name="android:textColorSecondary">#C4C4C4</item>
     </style>
+
+<!--    Theme.Material3.DayNight.NoActionBar-->
+
+
+
 
     <style name="Theme.AppLock" parent="Base.Theme.AppLock" />
 

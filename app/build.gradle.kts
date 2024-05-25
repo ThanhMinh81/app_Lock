@@ -51,6 +51,7 @@ android {
 
 dependencies {
 
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -75,4 +76,9 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+
+    implementation("androidx.camera:camera-core:1.4.0-alpha05")
+    implementation("androidx.camera:camera-camera2:1.4.0-alpha05")
+    implementation("androidx.camera:camera-lifecycle:1.4.0-alpha05")
+
 }

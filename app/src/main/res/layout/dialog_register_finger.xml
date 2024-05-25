@@ -26,15 +26,16 @@
         android:text="@string/txt_context_regisfinger"
         android:textSize="16sp" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSettingFinger"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="45dp"
+    <Button
         android:layout_marginTop="10dp"
-        android:text="@string/txt_btn_setting"
         android:textSize="15sp"
-        app:backgroundTint="@color/bg_btn"
-        app:cornerRadius="4dp" />
+        android:id="@+id/btnSettingFinger"
+        android:text="@string/txt_btn_setting"
+         android:minHeight="35dp"
+        android:minWidth="0dp"
+        android:background="@color/bg_btn"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
 
 </LinearLayout>

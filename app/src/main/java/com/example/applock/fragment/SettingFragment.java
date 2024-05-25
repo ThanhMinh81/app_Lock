@@ -36,7 +36,6 @@ import com.andrognito.patternlockview.PatternLockView;
 import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
 import com.example.applock.R;
-import com.google.android.material.button.MaterialButton;
 
 import java.util.List;
 
@@ -51,7 +50,7 @@ public class SettingFragment extends Fragment {
     TextView tvPin;
 
     TextView tvTitleDialog, tvCancel, tvCurrentModeLock;
-    MaterialButton btnCheck, btnClear;
+    Button btnCheck, btnClear;
     ImageView selectFingerUnlock;
 
     Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
@@ -258,7 +257,7 @@ public class SettingFragment extends Fragment {
         SharedPreferences.Editor editorFinger = modeLockSpf.edit();
 
 
-        MaterialButton btnCancel, btnOk;
+        Button btnCancel, btnOk;
         CheckBox cbFingerUnlock;
         LinearLayout layoutOnlyFinger;
 
@@ -314,7 +313,7 @@ public class SettingFragment extends Fragment {
 
     private void showDialogEnableFinger() {
 
-        MaterialButton btnSetting;
+        Button btnSetting;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext(), R.style.MyDialogTheme);
         LayoutInflater layoutInflater = LayoutInflater.from(this.getContext());
@@ -345,7 +344,7 @@ public class SettingFragment extends Fragment {
 
     private void showDialogRelockApp() {
         RadioButton rbImedia, rbScreenOff, rbAfterMinute;
-        MaterialButton tvCancel, tvOk;
+        Button tvCancel, tvOk;
         SeekBar seekBarMinute;
         TextView tvMinute;
 

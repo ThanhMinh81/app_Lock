@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Item when checked -->
+    <item android:state_checked="true">
+        <layer-list>
+            <!-- Background color -->
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="#1abc9c" />
+                </shape>
+            </item>
+            <!-- Icon -->
+            <item android:drawable="@drawable/_0131958_italic_line_icon__1_" android:gravity="center" />
+        </layer-list>
+    </item>
+    <!-- Default item -->
+    <item android:state_checked="false" >
+        <layer-list>
+            <!-- Background color -->
+            <item android:drawable="@drawable/_0131958_italic_line_icon__1_" android:gravity="center" />
+
+            <item>
+                <shape android:shape="rectangle">
+                    <solid android:color="@android:color/transparent" />
+                </shape>
+            </item>
+            <!-- Icon -->
+        </layer-list>
+    </item>
+
+<!--  <item android:state_checked="true">-->
+<!--      <color android:color="@color/white"/>-->
+<!--      <shape?-->
+<!--  </item>-->
+<!--    <item android:state_checked="false">-->
+<!--        <color android:color="@android:color/transparent"/>-->
+<!--    </item>-->
+</selector>

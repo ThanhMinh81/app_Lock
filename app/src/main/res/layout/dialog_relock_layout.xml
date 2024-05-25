@@ -46,14 +46,15 @@
             android:paddingBottom="10dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-              android:gravity="center"
+            android:gravity="center"
             android:orientation="horizontal">
 
             <RadioButton
+                android:gravity="center_vertical"
+                android:layout_weight="1"
                 android:id="@+id/rbAfterMinute"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
+                android:layout_height="25dp"
                 android:text="After"
                 android:theme="@style/MyRadioButton" />
 
@@ -104,20 +105,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:layout_weight="1"
             android:id="@+id/tvCancel"
-            android:text="@string/txt_cancel_button"
+            android:text="Cancel"
             app:cornerRadius="2dp"
             android:textSize="13sp"
             android:minHeight="45dp"
-                android:layout_marginEnd="10dp"
+            android:layout_marginEnd="10dp"
             app:backgroundTint="#7f8fa6"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"/>
 
 
-        <com.google.android.material.button.MaterialButton
+        <Button
             android:layout_weight="1"
            android:layout_marginStart="10dp"
             android:id="@+id/tvOk"
@@ -126,7 +127,7 @@
             app:cornerRadius="2dp"
             android:textSize="13sp"
             app:backgroundTint="#00a8ff"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"/>
 
 

@@ -75,19 +75,15 @@ public class ScreenLockRecent {
         params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.MATCH_PARENT,
                 WindowManager.LayoutParams.MATCH_PARENT,
-                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ?
-                        WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY :
-                        WindowManager.LayoutParams.TYPE_SYSTEM_ALERT,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-                        | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
-                        | WindowManager.LayoutParams.FLAG_FULLSCREEN
-                        |WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS,
-                PixelFormat.TRANSLUCENT);
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+                PixelFormat.TRANSLUCENT
+        );
 
 
-        params.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_FULLSCREEN;
+//        params.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+//                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                | View.SYSTEM_UI_FLAG_FULLSCREEN;
 
 
 
@@ -176,7 +172,7 @@ public class ScreenLockRecent {
 
     private void confirmSuccess() {
 
-        unlockRecentMenu.unlockSs(false);
+        unlockRecentMenu.unlockSs(true);
 
     }
 
@@ -266,8 +262,6 @@ public class ScreenLockRecent {
 
     public void showScreenPassword() {
 
-        Log.d("5023fasfasd", "dsafafa");
-
         // Thêm floatingView vào WindowManager
         if (!isViewAdded) {
             windowManager.addView(floatingView, params);
@@ -321,12 +315,8 @@ public class ScreenLockRecent {
     // check xem windownmanager overlay con hien thi hay ko
     // tra ve true neu no con
 
-    public boolean isViewAttachedToWindow(View view) {
-        if (view.getWindowToken() != null) {
-            return true;
-        } else {
-            return false;
-        }
+    public boolean isOverlayVisible() {
+        return floatingView != null && floatingView.getWindowToken() != null;
     }
 
 

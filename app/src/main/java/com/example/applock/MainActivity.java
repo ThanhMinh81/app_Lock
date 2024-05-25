@@ -207,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int menuItemSize = getResources().getDimensionPixelSize(R.dimen.app_bar_size_menu_item);
         searchView.setMaxWidth(materialToolbar.getWidth() * appBarPadding - menuItemSize);
 
-
         searchView.setIconified(true);
 
         searchView.setOnSearchClickListener(new View.OnClickListener() {
@@ -226,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return false;
             }
         });
+
 
 
     }

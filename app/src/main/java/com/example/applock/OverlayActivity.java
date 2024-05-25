@@ -1,7 +1,9 @@
 package com.example.applock;
+
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.app.KeyguardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,10 +11,19 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
 import android.hardware.fingerprint.FingerprintManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyPermanentlyInvalidatedException;
 import android.security.keystore.KeyProperties;
@@ -23,6 +34,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TableLayout;
@@ -30,12 +42,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricPrompt;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.room.Room;
 
 import com.andrognito.patternlockview.PatternLockView;
@@ -45,8 +64,13 @@ import com.example.applock.Interface.ItemClickListenerFinger;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.model.Lock;
 import com.google.android.material.button.MaterialButton;
+import com.google.common.util.concurrent.ListenableFuture;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
@@ -55,8 +79,13 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
 import javax.crypto.Cipher;
@@ -71,7 +100,7 @@ public class OverlayActivity extends AppCompatActivity {
     // check thiết bị có bật vân tay hay không
 
     static final String KEY_NAME = "LOCKAPP";
-    ImageView imgChangeMode , imgFingerMode;
+    ImageView imgChangeMode, imgFingerMode;
 
     PatternLockView patternLockView;
     TableLayout tableLayout;
@@ -91,12 +120,17 @@ public class OverlayActivity extends AppCompatActivity {
     Button btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn0;
     KeyguardManager keyguardManager;
     ItemClickListenerFinger itemClickListenerFinger;
-    String unlockOnlyFinger = "no" , fingerPrintEnable;
-    LinearLayout headerTitleOverlay , layoutNameApp  ;
+    String unlockOnlyFinger = "no", fingerPrintEnable;
+    LinearLayout headerTitleOverlay, layoutNameApp;
 
-    SharedPreferences modeLockSpf ;
+    private static final String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
+
+    SharedPreferences modeLockSpf;
     private byte[] byteArrayIcon;
     private String lockName;
+
+
+    private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -107,7 +141,16 @@ public class OverlayActivity extends AppCompatActivity {
         LayoutInflater inflater = LayoutInflater.from(this);
         setContentView(R.layout.password_layout);
 
+
         initView();
+
+        // Kiểm tra quyền truy cập camera
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (checkSelfPermission(android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.CAMERA}, 1);
+            }
+        }
+
 
         itemClickListenerFinger = new ItemClickListenerFinger() {
             @Override
@@ -138,6 +181,7 @@ public class OverlayActivity extends AppCompatActivity {
         } else {
         }
 
+        cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
     }
 
@@ -189,12 +233,11 @@ public class OverlayActivity extends AppCompatActivity {
             unlockOnlyFinger = modeLockSpf.getString("unlock_only_finger", "no");
         }
 
-          Intent intent = getIntent();
+        Intent intent = getIntent();
 
         lockName = intent.getStringExtra("lock_name");
 
-        if (lockName.equals("lockScreenApp"))
-        {
+        if (lockName.equals("lockScreenApp")) {
             packageApp = intent.getStringExtra("package");
 
             byteArrayIcon = getIntent().getByteArrayExtra("picture");
@@ -273,14 +316,13 @@ public class OverlayActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams.MATCH_PARENT
             );
 
-            paramsNameApp.setMargins(0,0,0,0);
+            paramsNameApp.setMargins(0, 0, 0, 0);
             layoutNameApp.setLayoutParams(paramsNameApp);
 
 
         }
 
-        if(fingerPrintEnable.equals("no"))
-        {
+        if (fingerPrintEnable.equals("no")) {
             imgFingerMode.setVisibility(View.GONE);
         }
 
@@ -415,6 +457,8 @@ public class OverlayActivity extends AppCompatActivity {
                     }, 200);
 
                     patternLockView.clearPattern();
+
+
                 }
 
             }
@@ -439,21 +483,24 @@ public class OverlayActivity extends AppCompatActivity {
     private void confirmSuccess() {
 
 
-        if(lockName.equals("lockScreenApp"))
-        {
+        if (lockName.equals("lockScreenApp")) {
             Intent intent = new Intent("ACTION_LOCK_APP");
             intent.putExtra("message", packageApp);
 
-            sendBroadcast(intent);
+            try {
+                sendBroadcast(intent);
+            } catch (Exception e) {
+                Log.d("fsafdaf4353", e.toString());
+            }
 
             if (lock != null) {
 
                 if (modeLock.equals("immediately")) {
-                    lock.setStateLock(false);
-                    database.lockDAO().updateLock(lock);
+//                    lock.setStateLock(false);
+//                    database.lockDAO().updateLock(lock);
                 } else if (modeLock.equals("screen_off")) {
-                    lock.setStateLockScreenOff(false);
-                    database.lockDAO().updateLock(lock);
+//                    lock.setStateLockScreenOff(false);
+//                    database.lockDAO().updateLock(lock);
 
                 } else {
 
@@ -481,12 +528,12 @@ public class OverlayActivity extends AppCompatActivity {
                 }
             }
 
-        }else if(lockName.equals("lockRecentMenu")) {
+        } else if (lockName.equals("lockRecentMenu")) {
 
             // tạo 1 broadcast mới gửi về cho service
 
             Intent intent = new Intent("ACTION_LOCK_RECENT_MENU");
-            intent.putExtra("message",true);
+            intent.putExtra("message", true);
             sendBroadcast(intent);
 
         }

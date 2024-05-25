@@ -1,9 +1,5 @@
 package com.example.applock.fragment;
 
-import static android.content.Context.ALARM_SERVICE;
-import static androidx.core.content.ContextCompat.getSystemService;
-
-import android.app.AlarmManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -21,8 +17,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.room.Room;
 
+import com.example.applock.Interface.ItemClickListenerPackage;
 import com.example.applock.MainActivity;
 import com.example.applock.service.LockService;
 import com.example.applock.Interface.ItemClickListenerLock;
@@ -41,10 +37,9 @@ public class HomeFragment extends Fragment {
     HomeAdapter homeAdapter;
     RecyclerView rcvHome;
     ArrayList<ApplicationInfo> infoArrayList;
-    ItemClickListenerLock itemClickListenerLock;
-    LockDatabase lockDatabase;
     ArrayList<Lock> appSystem;
     LockDatabase database;
+    ItemClickListenerPackage itemClickListenerPackage;
     Button btnOff;
     @Override
     public void onAttach(@NonNull Context context) {
@@ -68,10 +63,10 @@ public class HomeFragment extends Fragment {
                 // nếu db đã có table
                 appSystem.clear();
                 lockArrayList.addAll(database.lockDAO().getListApps());
+
                 appSystem.addAll(setApplications(lockArrayList));
 
             } else {
-
                 // ban đầu người dùng lần đầu tiên cài apps
 
                 try {
@@ -99,17 +94,14 @@ public class HomeFragment extends Fragment {
 
         infoArrayList = new ArrayList<>();
 
-//        Intent intent = new Intent(getContext(), LockService.class);
-//        getContext().startService(intent);
+          sendService();
+
+        itemClickListenerPackage = () -> {
+            sendService();
+        };
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getContext().startForegroundService(new Intent(getContext(), LockService.class));
-        } else {
-            getContext().startService(new Intent(getContext(), LockService.class));
-        }
-
-        homeAdapter = new HomeAdapter(getContext(), appSystem, database);
+        homeAdapter = new HomeAdapter(getContext(), appSystem, database , itemClickListenerPackage);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
 
@@ -124,6 +116,30 @@ public class HomeFragment extends Fragment {
 
 
         return view;
+
+    }
+
+    private void sendService() {
+
+        ArrayList<String> packageName = new ArrayList<>();
+
+        Intent intent = new Intent(getContext(), LockService.class);
+
+        for (Lock item : database.lockDAO().getListLockApps()) {
+            packageName.add(item.getPackageApp());
+        }
+
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList("listPackage", packageName);
+        intent.putExtras(bundle);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            getContext().startForegroundService(intent);
+
+        } else {
+            getContext().startService(intent);
+        }
 
     }
 
