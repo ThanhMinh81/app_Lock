@@ -281,7 +281,6 @@
 
                     </RelativeLayout>
 
-
                     <RelativeLayout
                         android:id="@+id/layoutUsegingerPrintUnlock"
                         android:layout_width="wrap_content"
@@ -359,46 +358,64 @@
 
                     </RelativeLayout>
 
-                    <LinearLayout
+
+                    <RelativeLayout
                         android:id="@+id/layout_relockApp"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="?selectableItemBackground"
-                        android:clickable="true"
-                        android:gravity="start"
-                        android:padding="10dp">
-
-                        <ImageView
-                            android:id="@+id/ic_lock"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
+                        android:clickable="true">
 
                         <LinearLayout
-                            android:layout_width="wrap_content"
+                            android:id="@+id/layout_relockApp1"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:foreground="?android:attr/selectableItemBackground"
                             android:gravity="center_vertical"
-                            android:orientation="vertical">
+                            android:orientation="horizontal"
+                            android:padding="10dp">
 
-                            <TextView
-                                android:id="@+id/tv_RelockApp"
+                            <ImageView
+                                android:layout_width="30dp"
+                                android:layout_height="30dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_lock" />
+
+                            <RelativeLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Relock App"
-                                android:textSize="17sp" />
+                                android:layout_marginLeft="10dp"
+                                android:layout_weight="9"
+                                android:gravity="center_vertical">
 
-                            <TextView
-                                android:id="@+id/tvCurrentModeLock"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Immediately"
-                                android:textColor="#7D7D7D"
-                                android:textSize="14sp" />
+                                <TextView
+                                    android:id="@+id/titleRelockApp"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="RelockApp"
+                                    android:textColor="@color/black"
+                                    android:textSize="17sp" />
+
+                                <TextView
+                                    android:id="@+id/tvCurrentModeLock"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_below="@+id/titleRelockApp"
+                                    android:text="Use fingerprint to unlock"
+                                    android:textColor="@color/black" />
+                            </RelativeLayout>
+
                         </LinearLayout>
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="0.2dp"
+                            android:layout_below="@+id/layout_relockApp1"
+                            android:layout_marginLeft="40dp"
+                            android:background="#888888"
+                            tools:ignore="NotSibling" />
 
+                    </RelativeLayout>
 
-                    </LinearLayout>
 
 
                 </LinearLayout>
@@ -437,164 +454,6 @@
                         android:textSize="18sp"
                         android:textStyle="bold" />
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical">
-
-                        <LinearLayout
-                            android:id="@+id/layoutPrimaryUnLockMethod"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:padding="10dp">
-
-                            <ImageView
-                                android:id="@+id/ic_lockPrimaryUnlock"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_centerVertical="true"
-                                android:layout_gravity="center_vertical"
-                                android:src="@drawable/ic_lock_circle" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="15dp"
-                                android:layout_marginTop="10dp"
-                                android:layout_toRightOf="@id/ic_lockPrimaryUnlock"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="top"
-                                    android:text="Primary Unlock Method" />
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent">
-
-                                    <RadioGroup
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:layout_marginLeft="10dp"
-                                        android:orientation="horizontal">
-
-                                        <RadioButton
-                                            android:id="@+id/rb_pinPassword"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_weight="1"
-                                            android:text="Pin" />
-
-                                        <RadioButton
-                                            android:id="@+id/rb_pinPattern"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_weight="1"
-                                            android:text="Pattern" />
-
-
-                                    </RadioGroup>
-
-                                </LinearLayout>
-
-
-                            </LinearLayout>
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_below="@+id/layoutPrimaryUnLockMethod"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp"
-                        android:gravity="center_vertical">
-
-                        <LinearLayout
-                            android:id="@+id/locknotifi"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="10dp">
-
-                            <ImageView
-                                android:id="@+id/ic_notifi"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:layout_gravity="center_vertical"
-                                android:src="@drawable/ic_lock_circle" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginLeft="10dp"
-                                android:layout_toEndOf="@id/ic_notifi"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="top"
-                                    android:text="Lock Notifications" />
-
-                                <LinearLayout
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content">
-
-                                    <RadioGroup
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:layout_marginLeft="10dp"
-                                        android:orientation="horizontal">
-
-                                        <RadioButton
-                                            android:id="@+id/rb_pinPasswordSecondary"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_weight="1"
-                                            android:text="Pin" />
-
-                                        <RadioButton
-                                            android:id="@+id/rb_pinPatternSecondary"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_weight="1"
-                                            android:text="Pattern" />
-
-
-                                        <RadioButton
-                                            android:id="@+id/rb_pinNoneSecondary"
-                                            android:layout_width="wrap_content"
-                                            android:layout_height="wrap_content"
-                                            android:layout_weight="1"
-                                            android:text="None" />
-
-                                    </RadioGroup>
-
-                                </LinearLayout>
-
-                            </LinearLayout>
-
-                        </LinearLayout>
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_below="@+id/locknotifi"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-                    </RelativeLayout>
 
                     <RelativeLayout
                         android:id="@+id/layout_change_pin"
@@ -716,7 +575,6 @@
                         android:clickable="true"
                         android:gravity="center_vertical">
 
-
                         <LinearLayout
                             android:id="@+id/recentApps"
                             android:layout_width="match_parent"
@@ -764,7 +622,6 @@
 
                         </LinearLayout>
 
-
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="0.1dp"
@@ -772,22 +629,21 @@
                             android:layout_marginLeft="30dp"
                             android:background="#888888" />
 
-
                     </RelativeLayout>
-
 
                     <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="60dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:background="?actionBarItemBackground"
+                        android:id="@+id/layoutInstall"
+                        android:background="?selectableItemBackground"
                         android:clickable="true"
                         android:gravity="center_vertical">
 
-
                         <LinearLayout
+                            android:id="@+id/recentApps1"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             android:paddingLeft="10dp"
                             android:paddingTop="15dp"
@@ -795,508 +651,51 @@
                             android:paddingBottom="15dp">
 
                             <ImageView
-                                android:id="@+id/ic_notifiMoreSetting"
+                                android:id="@+id/ic_lock_recent1"
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:layout_alignParentLeft="true"
-                                android:layout_marginRight="10dp"
+                                android:layout_centerVertical="true"
                                 android:src="@drawable/ic_lock_circle" />
-
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="match_parent"
-                                android:layout_weight="2"
+                                android:layout_marginLeft="10dp"
+                                android:layout_weight="4"
                                 android:gravity="center_vertical"
-                                android:text="Lock Notifications"
-                                android:textSize="17sp" />
-
-
-                            <CheckBox
-                                android:id="@+id/cb_moreSetting"
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:checked="false" />
-
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="horizontal">
-
-                            <ImageView
-                                android:id="@+id/ic_auto_loock"
-                                android:layout_width="32dp"
-                                android:layout_height="match_parent"
-                                android:layout_alignParentLeft="true"
-                                android:layout_marginRight="10dp"
-                                android:src="@drawable/ic_lock_circle" />
-
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top"
-                                android:layout_weight="2"
                                 android:text="Auto Lock Newly Installed Apps"
                                 android:textSize="17sp" />
 
 
                             <CheckBox
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
+                                android:id="@+id/cbCheckInstall"
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:buttonTint="@color/black"
                                 android:checked="false" />
 
 
                         </LinearLayout>
 
-
                         <View
                             android:layout_width="match_parent"
                             android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
+                            android:layout_below="@+id/recentApps1"
                             android:layout_marginLeft="30dp"
                             android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-                        <ImageView
-                            android:id="@+id/ic_hide_pattern"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_toRightOf="@id/ic_hide_pattern"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top"
-                                android:layout_weight="1"
-                                android:text="Hide Pattern"
-                                android:textSize="17sp" />
-
-
-                            <CheckBox
-
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:layout_alignParentEnd="true"
-                                android:checked="false"
-                                android:textOff="No"
-                                android:textOn="Yes" />
-
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-                        <ImageView
-                            android:id="@+id/ic_shuffle_pin"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_toRightOf="@id/ic_shuffle_pin"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top"
-                                android:layout_weight="1"
-                                android:text="Shuffle Pin Pad"
-                                android:textSize="17sp" />
-
-
-                            <CheckBox
-
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:layout_alignParentEnd="true"
-                                android:checked="false"
-                                android:textOff="No"
-                                android:textOn="Yes" />
-
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-                        <ImageView
-                            android:id="@+id/ic_fake_crash"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_toRightOf="@id/ic_fake_crash"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top"
-                                android:layout_weight="1"
-                                android:text="Fake Crash"
-                                android:textSize="17sp" />
-
-
-                            <CheckBox
-
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:layout_alignParentEnd="true"
-                                android:checked="false"
-                                android:textOff="No"
-                                android:textOn="Yes" />
-
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-                        <ImageView
-                            android:id="@+id/ic_change_lock_screen"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_toRightOf="@id/ic_change_lock_screen"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:layout_gravity="top"
-                                android:layout_weight="1"
-                                android:gravity="center_vertical"
-                                android:text="Change Lock Screen Theme"
-                                android:textSize="17sp" />
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
 
                     </RelativeLayout>
 
                 </LinearLayout>
 
-
-            </androidx.cardview.widget.CardView>
-
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/layout_intruders"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:layout_marginTop="5dp"
-                android:elevation="10dp"
-                android:padding="20dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:paddingLeft="10dp"
-                        android:paddingTop="10dp"
-                        android:text="Intruders"
-                        android:textColor="#00C0FF"
-                        android:textSize="18sp"
-                        android:textStyle="bold" />
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:background="?selectableItemBackground"
-                        android:clickable="true"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-                        <ImageView
-                            android:id="@+id/ic_intruders"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_toRightOf="@id/ic_intruders"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="top"
-                                android:layout_weight="2"
-                                android:text="Capture Intruder Picture"
-                                android:textSize="17sp" />
-
-
-                            <ToggleButton
-                                android:id="@+id/toggle3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_alignParentEnd="true"
-                                android:checked="false"
-                                android:textOff="No"
-                                android:textOn="Yes" />
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:background="?selectableItemBackground"
-                        android:clickable="true"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-                        <ImageView
-                            android:id="@+id/ic_wrong_tries"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_toRightOf="@id/ic_wrong_tries"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:layout_gravity="top"
-                                android:layout_weight="2"
-                                android:gravity="center_vertical"
-                                android:text="Capture Intruder Picture"
-                                android:textSize="17sp" />
-
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="2" />
-
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="60dp"
-                        android:layout_marginTop="5dp"
-                        android:background="?selectableItemBackground"
-                        android:clickable="true"
-                        android:gravity="center_vertical"
-                        android:padding="7dp">
-
-                        <ImageView
-                            android:id="@+id/ic_intruder_photos"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_alignParentLeft="true"
-                            android:layout_marginRight="10dp"
-                            android:src="@drawable/ic_lock_circle" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_toRightOf="@id/ic_intruder_photos"
-                            android:orientation="horizontal">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="match_parent"
-                                android:layout_gravity="top"
-                                android:layout_weight="2"
-                                android:gravity="center_vertical"
-                                android:text="Intruder Photos"
-                                android:textSize="17sp" />
-
-
-                            <ImageView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:src="@drawable/ic_next" />
-
-
-                        </LinearLayout>
-
-
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="0.1dp"
-                            android:layout_alignParentBottom="true"
-                            android:layout_marginLeft="30dp"
-                            android:background="#888888" />
-
-
-                    </RelativeLayout>
-
-
-                </LinearLayout>
-
-
             </androidx.cardview.widget.CardView>
 
         </LinearLayout>
-
 
     </LinearLayout>
-
 
 </androidx.core.widget.NestedScrollView>
 

@@ -38,6 +38,8 @@ public class ShowOverlayPassword {
 
             ApplicationInfo applicationInfo = packageManager.getApplicationInfo(result, PackageManager.GET_META_DATA);
 
+            Log.d("53523sfa",applicationInfo.packageName.toString());
+
             Drawable iconDrawable = applicationInfo.loadIcon(packageManager);
 
             Bitmap bitmap = null;

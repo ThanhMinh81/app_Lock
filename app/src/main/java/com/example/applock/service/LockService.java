@@ -5,7 +5,6 @@ import static com.example.applock.service.ShowOverlayPassword.hideOverlay;
 import static com.example.applock.service.ShowOverlayPassword.showOverlayPassWord;
 
 import android.annotation.SuppressLint;
-import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -16,24 +15,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.PixelFormat;
-import android.graphics.drawable.AdaptiveIconDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.VectorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.SystemClock;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 
@@ -42,14 +31,12 @@ import androidx.core.app.NotificationCompat;
 import androidx.room.Room;
 
 import com.example.applock.Interface.UnlockRecentMenu;
-import com.example.applock.OverlayActivity;
 import com.example.applock.R;
 import com.example.applock.ScreenLockRecent;
 import com.example.applock.db.LockDatabase;
 import com.example.applock.fragment.HomeFragment;
 import com.example.applock.model.Lock;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Objects;
@@ -82,10 +69,11 @@ public class LockService extends Service {
     private boolean showPassImplement = false;
     private SharedPreferences sharedPreferences;
 
+    public BroadcastReceiver broadcastChangePackage;
+
     WindowManager windowManager;
 
     View overlayView;
-
 
     @Override
     public void onCreate() {
@@ -144,6 +132,8 @@ public class LockService extends Service {
             startForeground(1, notification);
         }
 
+        // get data list app lock on adapter sender
+
         if (intent != null && intent.getExtras() != null) {
 
             Bundle bundle = intent.getExtras();
@@ -151,7 +141,6 @@ public class LockService extends Service {
             if (bundle != null) {
 
                 ArrayList<String> dataList = bundle.getStringArrayList("listPackage");
-
                 isPackageUnlock.clear();
                 isPackageUnlock.addAll(dataList);
 
@@ -187,9 +176,8 @@ public class LockService extends Service {
             lockRecentMenu = sharedPreferences.getString("lock_recent_menu", "no");
 
             long endTime = System.currentTimeMillis();
-            long beginTime = endTime - 6000;
+            long beginTime = endTime - 1000;
             result = "null";
-
 
             UsageEvents.Event event = new UsageEvents.Event();
             UsageStatsManager sUsageStatsManager = (UsageStatsManager) this.getSystemService(Context.USAGE_STATS_SERVICE);
@@ -219,13 +207,9 @@ public class LockService extends Service {
 
                     }
                 } else {
-
                     showPassImplement = false;
-
                 }
-
             }
-
             packageTemp = result;
 
         }
@@ -233,17 +217,14 @@ public class LockService extends Service {
 
     private void lockScreenApp() throws PackageManager.NameNotFoundException {
 
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        Log.d("5023fasfasd", result);
 
         if (modeLock.equals("immediately")) {
 
-            if (database.lockDAO().isPackageLocked(result) != 0 && !showPassImplement && !result.equals("null")) {
+            //            if (database.lockDAO().isPackageLocked(result) != 0 && !showPassImplement && !result.equals("null")) {
+
+            if (!showPassImplement && !result.equals("null")) {
+
+                Log.d("5023fasfasd", result);
 
                 showPassImplement = true;
 
@@ -252,6 +233,7 @@ public class LockService extends Service {
             }
 
         } else if (modeLock.equals("screen_off") && isPackageUnlock.contains(result) && !result.equals("null")) {
+
 
             showOverlayPassWord(this, result, "lockScreenApp", modeLock);
 
@@ -278,10 +260,7 @@ public class LockService extends Service {
                     }
                 }
             }
-
         }
-
-
     }
 
 
@@ -314,33 +293,15 @@ public class LockService extends Service {
                 checkScreenOverlayShow = false;
                 showPassImplement = true;
 
-
                 if (modeLock.equals("screen_off") && isPackageUnlock.contains(message)) {
 
                     isPackageUnlock.remove(message);
 
-                    isRunning = false;
-
-                    Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                        }
-                    }, 500);
-
-                    isRunning = true;
-                    thread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                runAppLockChecker();
-                            } catch (PackageManager.NameNotFoundException e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                    });
-
-                    thread.start();
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
 
                 }
 
@@ -361,6 +322,8 @@ public class LockService extends Service {
                     isPackageUnlock.clear();
                     getArrayPackageLockString();
                     Log.d("903582asf", "themmanggg");
+
+
                 }
             }
         };
@@ -371,13 +334,11 @@ public class LockService extends Service {
 
 //        ============== receiver press recent =====================
 
-
         IntentFilter intentFilterACSD = new IntentFilter(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
 
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-
                 if (intent.getAction().equals(Intent.ACTION_CLOSE_SYSTEM_DIALOGS)) {
                     String reason = intent.getStringExtra(SYSTEM_DIALOG_REASON_KEY);
 
@@ -415,10 +376,38 @@ public class LockService extends Service {
             }
         };
 
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            registerReceiver(broadcastReceiver, intentFilterACSD, Context.RECEIVER_NOT_EXPORTED);
+            registerReceiver(broadcastReceiver, intentFilterACSD);
         }
 
+        broadcastChangePackage = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                String action = intent.getAction();
+                Log.d("addfasdfa", "fadfa" + " ");
+
+                if (action.equals(Intent.ACTION_PACKAGE_ADDED)) {
+                    String packageName = intent.getData().getSchemeSpecificPart();
+                    Log.d("addfasdf", packageName + " ");
+                } else if (action.equals(Intent.ACTION_PACKAGE_REMOVED)) {
+                    String packageName = intent.getData().getSchemeSpecificPart();
+                    Log.d("removefasfd", packageName + " ");
+                }
+
+            }
+        };
+        IntentFilter intentPackage = new IntentFilter();
+        intentPackage.addAction(Intent.ACTION_PACKAGE_ADDED);
+        intentPackage.addDataScheme("package");
+
+        intentPackage.addAction(Intent.ACTION_PACKAGE_REMOVED);
+//        intentPackage.addAction(Intent.ACTION_PACKAGE_ADDED);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            registerReceiver(broadcastChangePackage, intentPackage);
+        }
     }
 
     @Override
@@ -432,3 +421,4 @@ public class LockService extends Service {
 
 
 }
+

@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         mTabLayout.addTab(mTabLayout.newTab().setText("APP LIST"));
 
+
         mTabLayout.addTab(mTabLayout.newTab().setText("SETTINGS"));
         mTabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 

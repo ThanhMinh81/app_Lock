@@ -1,5 +1,7 @@
 package com.example.applock.fragment;
 
+import static android.view.View.*;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,7 +61,9 @@ public class SettingFragment extends Fragment {
     int count = 0;
     ImageView imgChangeSuccess;
     TableLayout tableLayoutChangePin;
-    LinearLayout layoutRelockApp;
+    RelativeLayout layoutRelockApp;
+
+
 
     // hiển thị thời gian khóa app
     String minuteLock = "";
@@ -70,8 +75,10 @@ public class SettingFragment extends Fragment {
     RelativeLayout layoutFingerPrint;
     ImageView imgSettingFinger;
     SharedPreferences sharedPreferencesPassword;
-    RelativeLayout layoutLockRecent;
-    CheckBox cbLockRecentMenu;
+    RelativeLayout layoutLockRecent ;
+    RelativeLayout layoutInstalLock ;
+    CheckBox cbLockRecentMenu , cbLockInstallNew;
+
 
     public SettingFragment() {
     }
@@ -207,6 +214,14 @@ public class SettingFragment extends Fragment {
 
         });
 
+        layoutInstalLock.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d("324525","Fsdafasdfa");
+                 cbLockInstallNew.setChecked(!cbLockInstallNew.isChecked());
+            }
+        });
+
     }
 
     @SuppressLint("CutPasteId")
@@ -221,6 +236,8 @@ public class SettingFragment extends Fragment {
         imgSettingFinger = view.findViewById(R.id.selectFingerUnlock);
         layoutLockRecent = view.findViewById(R.id.layout_lock_recentmenu);
         cbLockRecentMenu = view.findViewById(R.id.cb_lock_recent);
+        layoutInstalLock = view.findViewById(R.id.layoutInstall);
+        cbLockInstallNew = view.findViewById(R.id.cbCheckInstall);
 
         modeLockSpf = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
         lockModeCurrent = modeLockSpf.getString("lock_mode", "immediately");
@@ -343,11 +360,11 @@ public class SettingFragment extends Fragment {
     }
 
     private void showDialogRelockApp() {
+
         RadioButton rbImedia, rbScreenOff, rbAfterMinute;
         Button tvCancel, tvOk;
         SeekBar seekBarMinute;
         TextView tvMinute;
-
 
         SharedPreferences modeLock = getContext().getSharedPreferences("LockMode", Context.MODE_PRIVATE);
 
@@ -406,7 +423,7 @@ public class SettingFragment extends Fragment {
             rbAfterMinute.setChecked(true);
         }
 
-        View.OnClickListener onClickListener = new View.OnClickListener() {
+        OnClickListener onClickListener = new OnClickListener() {
             @Override
             public void onClick(View v) {
                 RadioButton clickedRadioButton = (RadioButton) v;
@@ -511,7 +528,7 @@ public class SettingFragment extends Fragment {
         tableLayoutChangePin = dialogPattern.findViewById(R.id.tableLayout);
 
 
-        imgChangeSuccess.setVisibility(View.GONE);
+        imgChangeSuccess.setVisibility(GONE);
 
         builder.setView(dialogPattern);
         AlertDialog dialog = builder.create();
@@ -566,8 +583,8 @@ public class SettingFragment extends Fragment {
                         // thay dodoir mat khau thanh cong
 
                         tvTitleDialog.setText("Pin changed");
-                        imgChangeSuccess.setVisibility(View.VISIBLE);
-                        tableLayoutChangePin.setVisibility(View.GONE);
+                        imgChangeSuccess.setVisibility(VISIBLE);
+                        tableLayoutChangePin.setVisibility(GONE);
                         tvCancel.setText("OK");
 
 
@@ -630,7 +647,7 @@ public class SettingFragment extends Fragment {
             onClearPinPassword(v);
         });
 
-        btnClear.setOnLongClickListener(new View.OnLongClickListener() {
+        btnClear.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 tvPin.setText("");
@@ -665,7 +682,6 @@ public class SettingFragment extends Fragment {
         String buttonText = button.getText().toString();
         String updatedText = currentText + buttonText;
         tvPin.setText(updatedText);
-
     }
 
     public void onClearPinPassword(View view) {
@@ -694,7 +710,7 @@ public class SettingFragment extends Fragment {
         tvCancel = dialogPattern.findViewById(R.id.tvCancel);
         mPatternLockView = dialogPattern.findViewById(R.id.pattern_lock_create);
         img_state_pattern = dialogPattern.findViewById(R.id.state_true_pattern);
-        img_state_pattern.setVisibility(View.GONE);
+        img_state_pattern.setVisibility(GONE);
 
 
         mPatternLockView.addPatternLockListener(new PatternLockViewListener() {
@@ -723,8 +739,8 @@ public class SettingFragment extends Fragment {
                         tvTitleDialog.setText("Pattern Changed");
                         tvCancel.setText("OK");
                         changePattern = "";
-                        mPatternLockView.setVisibility(View.GONE);
-                        img_state_pattern.setVisibility(View.VISIBLE);
+                        mPatternLockView.setVisibility(GONE);
+                        img_state_pattern.setVisibility(VISIBLE);
 
                         SharedPreferences.Editor editor = sharedPreferencesPassword.edit();
 
@@ -751,7 +767,6 @@ public class SettingFragment extends Fragment {
                         }, 400);
                     }
                 }
-
             }
 
             @Override

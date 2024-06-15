@@ -31,11 +31,10 @@
         android:textSize="15sp"
         android:id="@+id/btnSettingFinger"
         android:text="@string/txt_btn_setting"
-         android:minHeight="35dp"
+        android:minHeight="35dp"
         android:minWidth="0dp"
         android:background="@color/bg_btn"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
-
 
 </LinearLayout>
